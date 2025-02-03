@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+
+        <style>
+            img {
+                border: none;
+                display: block;
+            }
+
+            .imgloaded {
+                border: 3px solid black;
+                width: 300px;
+                height: auto;
+            }
+
+            canvas {
+                margin: auto;
+                display: block;
+                box-shadow: 0px 2px 12px -2px rgba(0, 0, 0, 0.15);
+             }     
+        </style>
+
+    </head>
+    <body>
+        <script src="getimage.js"></script>
+
+        <h1>Photo Pixel Manipulation</h1>
+        <h2>Stuff we need beforehand</h2>
+        <label for="imageUpload">Select an image: </label>
+        <input type="file" id="imageUpload" name="imageUpload" accept=".jpg, .jpeg, .png" /><br><br>
+        <span style="font-weight: bold;">PREVIEW</span>
+        <img src="" id="imagePreview" width="300"/>
+        <script>
+          (function () {
+            window.MyApp = {
+              imageUpload: document.getElementById('imageUpload'),
+              sharedImage: new Image(),
+              grayscaleCanvas: document.getElementById('grayscaleCanvas'),
+            }
+
+            MyApp.imageUpload.addEventListener('change', handleImageUploadChange);
+          })();
+
+        </script>
+
+        <label for="imagePreviewDimensions">Dimensions: </label>
+        <span id="imagePreviewDimensions"></span>
+        <p>(Option for "persistent pictures"; saving picture file path and using it without asking for a picture)</p>
+
+        <script src="getimage.js"></script>
+
+        <h2>Crop</h2>
+        <p>First, we have to crop! (I'll add this stuff later)</p>
+        <input type="number" id="crop_x">
+        <input type="number" id="crop_y">
+
+
+        <h3>Grayscale</h3>
+        <p>Grayscaling is done by calculating the luminosity of each pixel using</p>
+        <!-- program i made -->
+        <script id="grayscaleCanvas" src="grayscale.js"></script>
+    </body>
+</html>
+
+
+
+
