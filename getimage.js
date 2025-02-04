@@ -1,9 +1,9 @@
 function setImage() {
   const file = MyApp.imageUpload.files[0]; //Gets element where image was uploaded duh. Gets first file because we're not uploading multiple images, just one.
-  if (!file) { console.log("File from imageUpload is null! ", file); return; }
+  if (!file) { console.log("File from imageUpload is null! Aborting! ", file); return; }
   
   const image = MyApp.sharedImage;
-  if (!image) { console.log("Shared Image is null! ", image); return; }
+  if (!image) { console.log("Shared Image is null! Aborting! ", image); return; }
 
   readDataIntoImage(file, image);
 }
