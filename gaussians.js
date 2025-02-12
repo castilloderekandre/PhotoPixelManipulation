@@ -1,7 +1,7 @@
 const gaussian_function_2d = (x, y, standard_deviation) => {
   const normalization_factor = 1 / (2 * Math.PI * standard_deviation ** 2); //relative weights
-  const euler_exponential = -( (x ** 2 + y ** 2) / (2 * standard_deviation ** 2) );
-  return normalization_factor * Math.E ** euler_exponential;
+  const euler_exponent = -( (x ** 2 + y ** 2) / (2 * standard_deviation ** 2) );
+  return normalization_factor * Math.E ** euler_exponent;
 }
 
 const generate_gaussian_kernel = (grid_size, standard_deviation) => {
@@ -21,7 +21,6 @@ const generate_gaussian_kernel = (grid_size, standard_deviation) => {
     )
   );
 
-
   const originalCopy = grid.map(innerArray => [...innerArray]);
   console.log("Original grid: ", originalCopy); //Only for debugging, deleting later.
 
@@ -36,6 +35,7 @@ const generate_gaussian_kernel = (grid_size, standard_deviation) => {
   return grid;
 }
 
+//Test
 console.log("Gaussian kernel result: ", generate_gaussian_kernel(5, 3));
 
-//mirror padding when applying gaussian kernel
+//use mirror padding when applying gaussian kernel

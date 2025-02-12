@@ -1,5 +1,5 @@
 function setImage() {
-  const file = MyApp.imageUpload.files[0]; //Gets element where image was uploaded duh. Gets first file because we're not uploading multiple images, just one.
+  const file = MyApp.imageUpload.files[0]; //Not uploading multiple images.
   if (!file) { console.log("File from imageUpload is null! Aborting! ", file); return; }
   
   const image = MyApp.sharedImage;
@@ -19,7 +19,7 @@ function readDataIntoImage(file, image) {
       const previewImage = document.getElementById('imagePreview');
       previewImage.src = reader.result;
     },
-  ); //Transform file into Data URL to display in an Image element src property.
+  );
 
   reader.onerror = (error) => {
     console.error("Failed to read file! ", error);
