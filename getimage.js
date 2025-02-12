@@ -9,7 +9,7 @@ function setImage() {
 }
 
 function readDataIntoImage(file, image) {
-  const reader = new FileReader(); //FileReader to transform data into Data URL
+  const reader = new FileReader();
   reader.addEventListener(
     'load', 
     () => { 
@@ -19,7 +19,7 @@ function readDataIntoImage(file, image) {
       const previewImage = document.getElementById('imagePreview');
       previewImage.src = reader.result;
     },
-  ); //Adds event to execute upon finishing the ".readAsDataURL(file)". Sets image source as reader result
+  ); //Transform file into Data URL to display in an Image element src property.
 
   reader.onerror = (error) => {
     console.error("Failed to read file! ", error);
