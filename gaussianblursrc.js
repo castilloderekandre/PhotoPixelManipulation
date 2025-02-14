@@ -31,8 +31,6 @@ const gaussianBlurSketch = async () => {
     context.fillStyle = 'white';
     context.fillRect(0, 0, width, height);
 
-    context.drawImage(image, 0, 0);
-
     const imageData = dogContext.getImageData(0, 0, width, height);
 
     //
@@ -42,13 +40,13 @@ const gaussianBlurSketch = async () => {
   };
 };
 
-const createPadding = (imageData) => {
+const getMirrorPadding = (imageData) => {
   const pixels = imageData.data;
 
   const padding = [];
 
   for(let i = 0; i < pixels.length; i++) {
-    //4 * y... gonna head to bed fam
+    //4 * i + y * j... gonna head to bed fam
   }
 }
 
