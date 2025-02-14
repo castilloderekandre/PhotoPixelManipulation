@@ -1,9 +1,10 @@
 const canvasSketch = require('canvas-sketch');
 
 const grayscaleCanvas = document.getElementById('grayscaleCanvas');
+const dogCanvas = document.getElementById('dogCanvas');
 
 let settings = {
-  canvas: grayscaleCanvas,
+  canvas: dogCanvas,
   dimensions: [ 2048, 2048 ]
 };
 
@@ -17,7 +18,14 @@ const defaultSketch = () => {
   }
 }
 
-const grayscaleSketch = async () => {
+const gaussianBlurSketch = async () => {
+
+  const dogContext = settings.canvas?.getContext();
+
+  if (!dogContext) {
+    console.log('DoG Context is null! Aborting!');
+    return;
+  }
 
   return ({ context, width, height }) => {
     context.fillStyle = 'white';
@@ -25,17 +33,24 @@ const grayscaleSketch = async () => {
 
     context.drawImage(image, 0, 0);
 
-    const imageData = context.getImageData(0, 0, width, height);
+    const imageData = dogContext.getImageData(0, 0, width, height);
 
-    for (let i = 0; i < imageData.data.length; i+=4) {
-      const grayscalePixel = 0.299 * imageData.data[i] + 0.587 * imageData.data[i + 1] + 0.114 * imageData.data[i + 2];
-      imageData.data[i] = imageData.data[i + 1] = imageData.data[i + 2] = grayscalePixel;
-    }
+    //
 
     context.putImageData(imageData, 0, 0);
-    console.log('Grayscale sketch rendered successfully! (Doesn\'t say it\'s displayed the way the user intended)');
+    console.log('Gaussian blur sketch rendered successfully! (Doesn\'t say it\'s displayed the way the user intended)');
   };
 };
+
+const createPadding = (imageData) => {
+  const pixels = imageData.data;
+
+  const padding = [];
+
+  for(let i = 0; i < pixels.length; i++) {
+    //4 * y... gonna head to bed fam
+  }
+}
 
 const getSharedImageElement = () => {
   console.log("Attempting to return sharedImageElement!");
@@ -52,7 +67,7 @@ const start = async () => {
     () => {
       console.log('I EXECUTED UPON IMAGE \'load\' EVENT!');
       let no_src = image.currentSrc.length === 0;
-      sketch = no_src ? defaultSketch : grayscaleSketch;
+      sketch = no_src ? defaultSketch : gaussianBlurSketch;
 
       if (no_src){
         settings.dimensions = [2048, 2048];
