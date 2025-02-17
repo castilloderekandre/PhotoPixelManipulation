@@ -61,7 +61,8 @@ const gaussianBlurSketch = async () => {
         )
       );
 
-      convolute(imagePatch, kernel);
+      blurImageData.data[4 * i] = blurImageData.data[4 * i + 1] = blurImageData.data[4 * i + 2] = convolve(imagePatch, kernel);
+      blurImageData.data[4 * i + 3] = 255;
     }
 
     context.putImageData(blurImageData, 0, 0);
@@ -109,8 +110,15 @@ const getPixelsValue = (imageData, x, y) => {
   return pixels[OFFSET_COLUMN * x + OFFSET_ROW * y];
 }
 
-const convolute = (matrix_a, matrix_b) => {
+const convolve = (matrix_a, matrix_b) => {
+  const sum = 0;
+  for(let y = 0; y < 3; y++) {
+    for(let x = 0; x < 3; x++) {
+      sum += matrix_a[x][y] * matrix_b[x][y];
+    }
+  }
 
+  return sum;
 }
 
 const getSharedImageElement = () => {
