@@ -1,4 +1,4 @@
-export function gaussian_function_2d(x, y, standard_deviation) {
+const gaussian_function_2d = (x, y, standard_deviation) => {
   const normalization_factor = 1 / (2 * Math.PI * standard_deviation ** 2); //relative weights
   const euler_exponent = -( (x ** 2 + y ** 2) / (2 * standard_deviation ** 2) );
   return normalization_factor * Math.E ** euler_exponent;
