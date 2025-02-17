@@ -35,7 +35,7 @@ const gaussianBlurSketch = async () => {
 
     const blurImageData = new ImageData(imageData.width, imageData.height);
 
-    //Create a 2D array that represents the image patch. Check for edges, if need be, fill in edges with respective padding values. Convolute with gaussian kernel. Add new value to blurImageData.
+    //Create a 2D array that represents the image patch. Check for edges, if need be, fill in edges with respective padding values. Convolve with gaussian kernel. Add new value to blurImageData.
     for(let i = 0; i < totalCells; i++) {
       const imagePatch = Array.from( //Find a way to reuse values since image patch only shifts by 1 every iteration in any one direction
         { length: 3 },
