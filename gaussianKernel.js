@@ -1,7 +1,7 @@
 const gaussian_function_2d = (x, y, standard_deviation) => {
   const normalization_factor = 1 / (2 * Math.PI * standard_deviation ** 2); //relative weights
   const euler_exponent = -( (x ** 2 + y ** 2) / (2 * standard_deviation ** 2) );
-  return normalization_factor * Math.E ** euler_exponent;
+  return normalization_factor * Math.exp(euler_exponent);
 }
 
 export function generate_gaussian_kernel(grid_size, standard_deviation) {
@@ -20,17 +20,19 @@ export function generate_gaussian_kernel(grid_size, standard_deviation) {
     )
   );
 
+  console.log("Normalization sum: ", normalization_sum)
+
   const originalCopy = grid.map(innerArray => [...innerArray]);
   console.log("Original grid: ", originalCopy); //Only for debugging, deleting later.
 
   //Assuring all values in the kernel add up to 1
-  for(let i = 0; i < total_cells; i++) {
-    const x = i % grid_size; //No need for half size here since we're not calling gaussian_function_2d
-    const y = Math.floor(i / grid_size);
-
-    grid[x][y] = parseFloat((grid[x][y] / normalization_sum).toFixed(3)); //JavaScript sucks at math.
+  for(let y = 0; y < grid_size; y++){
+    for(let x = 0; x < grid_size; x++) {
+      grid[y][x] = grid[y][x] / normalization_sum; //JavaScript sucks at math.
+    }
   }
 
+  console.log("Grid: ", grid);
   return grid;
 }
 

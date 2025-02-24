@@ -10,6 +10,8 @@ let settings = {
   dimensions: [ 2048, 2048 ]
 };
 
+const STANDARD_DEVIATION = 1;
+
 const defaultSketch = () => {
 
   return ({ context, width, height }) => {
@@ -22,39 +24,31 @@ const defaultSketch = () => {
 
 const gaussianBlurSketch = async () => {
 
+  const GRID_SIZE = Math.floor(6 * STANDARD_DEVIATION) + 1;
+  const HALF_SIZE = Math.floor(GRID_SIZE / 2);
+
   return ({ context, width, height }) => {
     context.fillStyle = 'white';
     context.fillRect(0, 0, width, height);
 
     const imageData = grayscaleCanvas.getContext('2d').getImageData(0, 0, width, height);
     const totalCells = imageData.width * imageData.height;
-    const padding = getMirrorPadding(imageData);
-    console.log("Extracted padding: ", padding);
 
-    const kernel = generate_gaussian_kernel(3, 1);
+    const kernel = generate_gaussian_kernel(GRID_SIZE, STANDARD_DEVIATION);
 
     const blurImageData = new ImageData(imageData.width, imageData.height);
-
-    //Create a 2D array that represents the image patch. Check for edges, if need be, fill in edges with respective padding values. Convolve with gaussian kernel. Add new value to blurImageData.
+    const bounceCoordinate = (coord, max) => Math.abs((Math.abs(coord) + max) % (2 * max) - max); //Bounces the coordinate if necesarry to get the mirror padding.
     for(let i = 0; i < totalCells; i++) {
       const imagePatch = Array.from( //Find a way to reuse values since image patch only shifts by 1 every iteration in any one direction
-        { length: 3 },
+        { length: GRID_SIZE },
         (_, y) => Array.from(
-          { length: 3 },
+          { length: GRID_SIZE },
           (_, x) => {
-            const current_x = i % image.width;
-            const current_y = Math.floor(i / image.width);
-            const next_x = current_x + x - 1; //Offset 1 to center 'x'
-            const next_y = current_y + y - 1; //Offset 1 to center 'y'
+            let next_x = (i % image.width) + x - HALF_SIZE; //Offset to center 'x'
+            let next_y = Math.floor(i / image.width) + y - HALF_SIZE; //Offset to center 'y'
 
-            if(next_y < 0)
-              return padding[0][next_x + 1];
-            else if (next_x < 0)
-              return padding[2][next_y + 1];
-            else if (next_x >= imageData.width)
-              return padding[3][next_y + 1];
-            else if (next_y >= imageData.height)
-              return padding[1][next_x + 1];
+            next_x = bounceCoordinate(next_x, imageData.width);
+            next_y = bounceCoordinate(next_y, imageData.height);
 
             return getPixelsValue(imageData, next_x, next_y);
           }
@@ -70,32 +64,50 @@ const gaussianBlurSketch = async () => {
   };
 };
 
-//Needs rework to become scalable. Use repeating values as a starting point.
-const getMirrorPadding = (imageData) => {
-  const pixels = imageData.data;
+const getMirrorPadding = (imageData, GRID_SIZE) => {
+  const HALF_SIZE = GRID_SIZE / 2 | 0; //GRID_SIZE SHOULD always be positive. If it's negative that means something has gone terribly wrong.
+  
+  const CORNERS = {
+    TOP_LEFT:     (padding_level) => { return { x: padding_level + 1,                   y: padding_level + 1 }},
+    TOP_RIGHT:    (padding_level) => { return { x: imageData.width - padding_level - 1, y: padding_level + 1 }},
+    BOTTOM_LEFT:  (padding_level) => { return { x: padding_level + 1,                   y: imageData.height - padding_level - 1 }},
+    BOTTOM_RIGHT: (padding_level) => { return { x: imageData.width - padding_level - 1, y: imageData.height - padding_level - 1 }} 
+  };
 
-  console.log('Pixels: ', pixels);
+  const padding = {
+    up: [],
+    down: [],
+    left: [],
+    right: []
+  };
+  //height and width often vary in images. some logic depends on the height/width respectively.
+  for(let padding_level = 0; padding_level < HALF_SIZE; padding_level++) {
+    const [TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT] = [CORNERS.TOP_LEFT(padding_level), CORNERS.TOP_RIGHT(padding_level), CORNERS.BOTTOM_LEFT(padding_level), CORNERS.BOTTOM_RIGHT(padding_level)]
+    const [PADDING_HORIZONTAL_LENGTH, PADDING_VERTICAL_LENGTH] = [imageData.width + padding_level, imageData.height + padding_level];
+    //Due to kernel being symmetric, we can insert beginning/ending values (corners) of the arrays
+    for(let corner = 0; corner < HALF_SIZE; corner++) {
+      padding.up[padding_level][corner]                             = getPixelsValue(imageData, TOP_LEFT.x - corner, TOP_LEFT.y); //Beginning
+      padding.up[padding_level][PADDING_HORIZONTAL_LENGTH + corner] = getPixelsValue(imageData, TOP_RIGHT.x + padding_level - corner, TOP_RIGHT.y); //Ending
 
-  const PADDING_HORIZONTAL_LENGTH = imageData.width  + 2; //Readability
-  const PADDING_VERTICAL_LENGTH   = imageData.height + 2; //Readability
+      padding.down[padding_level][corner]                             = getPixelsValue(imageData, BOTTOM_LEFT.x - corner, BOTTOM_LEFT.y);
+      padding.down[padding_level][PADDING_HORIZONTAL_LENGTH + corner] = getPixelsValue(imageData, BOTTOM_RIGHT.x + padding_level - corner, BOTTOM_RIGHT.y);
+      
+      padding.left[padding_level][corner]                           = getPixelsValue(imageData, TOP_LEFT.x, TOP_LEFT.y - corner);
+      padding.left[padding_level][PADDING_VERTICAL_LENGTH + corner] = getPixelsValue(imageData, TOP_LEFT.x, TOP_LEFT.y + padding_level - corner);
 
-  const padding = Array.from(
-    { length: 4 },
-    () => []
-  );
+      padding.right[padding_level][corner]                           = getPixelsValue(imageData, TOP_RIGHT.x, TOP_RIGHT.y - corner);
+      padding.right[padding_level][PADDING_VERTICAL_LENGTH + corner] = getPixelsValue(imageData, TOP_RIGHT.x, TOP_RIGHT.y + padding_level - corner);
+    }
 
-  //In terms of pixels and not RGB values; we can assume the indexing will be by 1 (Pixel) instead of 4 (RGBA).
-  padding[2][0] /*Values repeat*/     = padding[0][0]                         = getPixelsValue(imageData, 1,                   1);
-  padding[2][PADDING_VERTICAL_LENGTH] = padding[0][PADDING_HORIZONTAL_LENGTH] = getPixelsValue(imageData, imageData.width - 2, 1);
-  padding[3][0]                       = padding[1][0]                         = getPixelsValue(imageData, 1,                   imageData.height - 2);
-  padding[3][PADDING_VERTICAL_LENGTH] = padding[1][PADDING_HORIZONTAL_LENGTH] = getPixelsValue(imageData, imageData.width - 2, imageData.height - 2);
-  for(let i = 0; i < imageData.width; i++) {
-    padding[0][i + 1] = getPixelsValue(imageData, i, 1);
-    padding[1][i + 1] = getPixelsValue(imageData, i, imageData.height - 2);
-  }
-  for(let i = 0; i < imageData.height; i++) {
-    padding[2][i + 1] = getPixelsValue(imageData,                   1, i);
-    padding[3][i + 1] = getPixelsValue(imageData, imageData.width - 2, i);
+    for(let pixel = 0; pixel < imageData.width; pixel++) {
+      padding.up[padding_level][HALF_SIZE + pixel - 1]   = getPixelsValue(imageData, pixel, TOP_LEFT.y);
+      padding.down[padding_level][HALF_SIZE + pixel - 1] = getPixelsValue(imageData, pixel, BOTTOM_LEFT.y);
+    }
+
+    for(let i = 0; i < imageData.height; i++) {
+      padding.left[padding_level][HALF_SIZE + pixel - 1]  = getPixelsValue(imageData, TOP_LEFT.x, pixel);
+      padding.right[padding_level][HALF_SIZE + pixel - 1] = getPixelsValue(imageData, TOP_RIGHT.x, pixel)
+    }
   }
 
   return padding;
@@ -111,10 +123,10 @@ const getPixelsValue = (imageData, x, y) => {
 }
 
 const convolve = (matrix_a, matrix_b) => {
-  const sum = 0;
+  let sum = 0;
   for(let y = 0; y < 3; y++) {
     for(let x = 0; x < 3; x++) {
-      sum += matrix_a[x][y] * matrix_b[x][y];
+      sum += Math.round(matrix_a[x][y] * matrix_b[x][y]);
     }
   }
 

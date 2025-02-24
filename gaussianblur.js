@@ -1,111 +1,211 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-const canvasSketch = require('canvas-sketch');
+"use strict";
 
-const grayscaleCanvas = document.getElementById('grayscaleCanvas');
-const gaussianCanvas = document.getElementById('gaussianCanvas');
-
-let settings = {
-  canvas: gaussianCanvas,
-  dimensions: [ 2048, 2048 ]
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.generate_gaussian_kernel = generate_gaussian_kernel;
+const gaussian_function_2d = (x, y, standard_deviation) => {
+  const normalization_factor = 1 / (2 * Math.PI * standard_deviation ** 2); //relative weights
+  const euler_exponent = -((x ** 2 + y ** 2) / (2 * standard_deviation ** 2));
+  return normalization_factor * Math.exp(euler_exponent);
 };
+function generate_gaussian_kernel(grid_size, standard_deviation) {
+  const half_size = Math.floor(grid_size / 2);
+  let normalization_sum = 0;
+  const grid = Array.from({
+    length: grid_size
+  }, (_, y) => Array.from({
+    length: grid_size
+  }, (_, x) => {
+    const gaussian = gaussian_function_2d(x - half_size, y - half_size, standard_deviation);
+    normalization_sum += gaussian;
+    return gaussian;
+  }));
+  console.log("Normalization sum: ", normalization_sum);
+  const originalCopy = grid.map(innerArray => [...innerArray]);
+  console.log("Original grid: ", originalCopy); //Only for debugging, deleting later.
 
-const defaultSketch = () => {
-
-  return ({ context, width, height }) => {
-    context.fillStyle = 'white';
-    context.fillRect(0, 0, width, height);
-    
-    console.log('Default sketch rendered!');
+  //Assuring all values in the kernel add up to 1
+  for (let y = 0; y < grid_size; y++) {
+    for (let x = 0; x < grid_size; x++) {
+      grid[y][x] = grid[y][x] / normalization_sum; //JavaScript sucks at math.
+    }
   }
+  console.log("Grid: ", grid);
+  return grid;
 }
 
-const gaussianBlurSketch = async () => {
+//Test
+// console.log("Gaussian kernel result: ", generate_gaussian_kernel(5, 3));
 
-  return ({ context, width, height }) => {
+//use mirror padding when applying gaussian kernel
+
+},{}],2:[function(require,module,exports){
+"use strict";
+
+var _gaussianKernel = require("./gaussianKernel");
+const canvasSketch = require('canvas-sketch');
+const grayscaleCanvas = document.getElementById('grayscaleCanvas');
+const gaussianCanvas = document.getElementById('gaussianCanvas');
+let settings = {
+  canvas: gaussianCanvas,
+  dimensions: [2048, 2048]
+};
+const STANDARD_DEVIATION = 1;
+const defaultSketch = () => {
+  return ({
+    context,
+    width,
+    height
+  }) => {
     context.fillStyle = 'white';
     context.fillRect(0, 0, width, height);
-
+    console.log('Default sketch rendered!');
+  };
+};
+const gaussianBlurSketch = async () => {
+  const GRID_SIZE = Math.floor(6 * STANDARD_DEVIATION) + 1;
+  const HALF_SIZE = Math.floor(GRID_SIZE / 2);
+  return ({
+    context,
+    width,
+    height
+  }) => {
+    context.fillStyle = 'white';
+    context.fillRect(0, 0, width, height);
     const imageData = grayscaleCanvas.getContext('2d').getImageData(0, 0, width, height);
-    const pixels = imageData.data;
-    const padding = getMirrorPadding(imageData);
-    console.log("Extracted padding: ", padding);
-
+    const totalCells = imageData.width * imageData.height;
+    const kernel = (0, _gaussianKernel.generate_gaussian_kernel)(GRID_SIZE, STANDARD_DEVIATION);
     const blurImageData = new ImageData(imageData.width, imageData.height);
+    const bounceCoordinate = (coord, max) => Math.abs((Math.abs(coord) + max) % (2 * max) - max); //Bounces the coordinate if necesarry to get the mirror padding.
+    for (let i = 0; i < totalCells; i++) {
+      const imagePatch = Array.from(
+      //Find a way to reuse values since image patch only shifts by 1 every iteration in any one direction
+      {
+        length: GRID_SIZE
+      }, (_, y) => Array.from({
+        length: GRID_SIZE
+      }, (_, x) => {
+        let next_x = i % image.width + x - HALF_SIZE; //Offset to center 'x'
+        let next_y = Math.floor(i / image.width) + y - HALF_SIZE; //Offset to center 'y'
 
-    //Create a 2D array that represents the image patch. Check for edges, if need be, fill in edges with respective padding values. Convolute with gaussian kernel. Add new value to blurImageData.
-
+        next_x = bounceCoordinate(next_x, imageData.width);
+        next_y = bounceCoordinate(next_y, imageData.height);
+        return getPixelsValue(imageData, next_x, next_y);
+      }));
+      blurImageData.data[4 * i] = blurImageData.data[4 * i + 1] = blurImageData.data[4 * i + 2] = convolve(imagePatch, kernel);
+      blurImageData.data[4 * i + 3] = 255;
+    }
     context.putImageData(blurImageData, 0, 0);
     console.log('Gaussian blur sketch rendered successfully! (Doesn\'t say it\'s displayed the way the user intended)');
   };
 };
+const getMirrorPadding = (imageData, GRID_SIZE) => {
+  const HALF_SIZE = GRID_SIZE / 2 | 0; //GRID_SIZE SHOULD always be positive. If it's negative that means something has gone terribly wrong.
 
-const getMirrorPadding = (imageData) => {
-  const pixels = imageData.data;
+  const CORNERS = {
+    TOP_LEFT: padding_level => {
+      return {
+        x: padding_level + 1,
+        y: padding_level + 1
+      };
+    },
+    TOP_RIGHT: padding_level => {
+      return {
+        x: imageData.width - padding_level - 1,
+        y: padding_level + 1
+      };
+    },
+    BOTTOM_LEFT: padding_level => {
+      return {
+        x: padding_level + 1,
+        y: imageData.height - padding_level - 1
+      };
+    },
+    BOTTOM_RIGHT: padding_level => {
+      return {
+        x: imageData.width - padding_level - 1,
+        y: imageData.height - padding_level - 1
+      };
+    }
+  };
+  const padding = {
+    up: [],
+    down: [],
+    left: [],
+    right: []
+  };
+  //height and width often vary in images. some logic depends on the height/width respectively.
+  for (let padding_level = 0; padding_level < HALF_SIZE; padding_level++) {
+    const [TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT] = [CORNERS.TOP_LEFT(padding_level), CORNERS.TOP_RIGHT(padding_level), CORNERS.BOTTOM_LEFT(padding_level), CORNERS.BOTTOM_RIGHT(padding_level)];
+    const [PADDING_HORIZONTAL_LENGTH, PADDING_VERTICAL_LENGTH] = [imageData.width + padding_level, imageData.height + padding_level];
+    //Due to kernel being symmetric, we can insert beginning/ending values (corners) of the arrays
+    for (let corner = 0; corner < HALF_SIZE; corner++) {
+      padding.up[padding_level][corner] = getPixelsValue(imageData, TOP_LEFT.x - corner, TOP_LEFT.y); //Beginning
+      padding.up[padding_level][PADDING_HORIZONTAL_LENGTH + corner] = getPixelsValue(imageData, TOP_RIGHT.x + padding_level - corner, TOP_RIGHT.y); //Ending
 
-  console.log('Pixels: ', pixels);
-
-  const PIXEL_DATA_WIDTH = 4;
-  const OFFSET_ROW    = PIXEL_DATA_WIDTH * imageData.width;
-  const OFFSET_COLUMN = PIXEL_DATA_WIDTH; //For readability. Will probably just indicate OFFSET_COLUMN is the same as PIXEL_DATA_WIDTH in a comment later
-  const PADDING_HORIZONTAL_LENGTH = imageData.width + 2; //Readability
-  const PADDING_VERTICAL_LENGTH   = imageData.height + 2; //Readability
-
-  const padding = Array.from(
-    { length: 4 },
-    () => []
-  );
-
-  //In terms of pixels and not RGB values; we can assume the indexing will be by 1 (Pixel) instead of 4 (RGBA). Only exception is 'i'
-  padding[2][0] /*Values intersect*/  = padding[0][0]                         = pixels[                        OFFSET_COLUMN +                          OFFSET_ROW]; //Gets (1,1) value
-  padding[2][PADDING_VERTICAL_LENGTH] = padding[0][PADDING_HORIZONTAL_LENGTH] = pixels[(imageData.width - 2) * OFFSET_COLUMN +                          OFFSET_ROW]; //Gets (Width - 1, 1) value
-  padding[3][0]                       = padding[1][0]                         = pixels[                        OFFSET_COLUMN + (imageData.height - 2) * OFFSET_ROW]; //Gets (1, Height - 1) value
-  padding[3][PADDING_VERTICAL_LENGTH] = padding[1][PADDING_HORIZONTAL_LENGTH] = pixels[(imageData.width - 2) * OFFSET_COLUMN + (imageData.height - 2) * OFFSET_ROW]; //Gets (Width - 1, Height - 1) value
-  for(let i = 0; i < imageData.width; i++) {
-    padding[0][i + 1] = pixels[                         OFFSET_ROW + i * PIXEL_DATA_WIDTH]; //Goes down 1 row, iterates from there using 'i'
-    padding[1][i + 1] = pixels[(imageData.height - 2) * OFFSET_ROW + i * PIXEL_DATA_WIDTH]; //Goes up 1 row from bottom, iterates from there using 'i'
+      padding.down[padding_level][corner] = getPixelsValue(imageData, BOTTOM_LEFT.x - corner, BOTTOM_LEFT.y);
+      padding.down[padding_level][PADDING_HORIZONTAL_LENGTH + corner] = getPixelsValue(imageData, BOTTOM_RIGHT.x + padding_level - corner, BOTTOM_RIGHT.y);
+      padding.left[padding_level][corner] = getPixelsValue(imageData, TOP_LEFT.x, TOP_LEFT.y - corner);
+      padding.left[padding_level][PADDING_VERTICAL_LENGTH + corner] = getPixelsValue(imageData, TOP_LEFT.x, TOP_LEFT.y + padding_level - corner);
+      padding.right[padding_level][corner] = getPixelsValue(imageData, TOP_RIGHT.x, TOP_RIGHT.y - corner);
+      padding.right[padding_level][PADDING_VERTICAL_LENGTH + corner] = getPixelsValue(imageData, TOP_RIGHT.x, TOP_RIGHT.y + padding_level - corner);
+    }
+    for (let pixel = 0; pixel < imageData.width; pixel++) {
+      padding.up[padding_level][HALF_SIZE + pixel - 1] = getPixelsValue(imageData, pixel, TOP_LEFT.y);
+      padding.down[padding_level][HALF_SIZE + pixel - 1] = getPixelsValue(imageData, pixel, BOTTOM_LEFT.y);
+    }
+    for (let i = 0; i < imageData.height; i++) {
+      padding.left[padding_level][HALF_SIZE + pixel - 1] = getPixelsValue(imageData, TOP_LEFT.x, pixel);
+      padding.right[padding_level][HALF_SIZE + pixel - 1] = getPixelsValue(imageData, TOP_RIGHT.x, pixel);
+    }
   }
-  for(let i = 0; i < imageData.height; i++) {
-    padding[2][i + 1] = pixels[                        OFFSET_COLUMN + OFFSET_ROW * i * PIXEL_DATA_WIDTH]; //Goes down 1 row on each 'i' iteration. Always 1 column to the right
-    padding[3][i + 1] = pixels[(imageData.width - 2) * OFFSET_COLUMN + OFFSET_ROW * i * PIXEL_DATA_WIDTH]; //Goes down 1 row on each 'i' iteration. Always 2nd to last column.
-  }
-
   return padding;
-}
+};
+const getPixelsValue = (imageData, x, y) => {
+  const pixels = imageData.data;
+  const PIXEL_DATA_WIDTH = 4; //Readability
+  const OFFSET_ROW = PIXEL_DATA_WIDTH * imageData.width;
+  const OFFSET_COLUMN = PIXEL_DATA_WIDTH; //Readability
 
+  return pixels[OFFSET_COLUMN * x + OFFSET_ROW * y];
+};
+const convolve = (matrix_a, matrix_b) => {
+  let sum = 0;
+  for (let y = 0; y < 3; y++) {
+    for (let x = 0; x < 3; x++) {
+      sum += Math.round(matrix_a[x][y] * matrix_b[x][y]);
+    }
+  }
+  return sum;
+};
 const getSharedImageElement = () => {
   console.log("Attempting to return sharedImageElement!");
   return MyApp.sharedImage;
-}
-
+};
 const start = async () => {
-  image = getSharedImageElement();
+  image = getSharedImageElement(); //Still necesarry to determine 
   manager = await canvasSketch(sketch, settings);
   manager.render();
-
-  image.addEventListener(
-    'load',
-    () => {
-      console.log('I EXECUTED UPON IMAGE \'load\' EVENT!');
-      let no_src = image.currentSrc.length === 0;
-      sketch = no_src ? defaultSketch : gaussianBlurSketch;
-
-      if (no_src){
-        settings.dimensions = [2048, 2048];
-      } else {
-        settings.dimensions = [image.width, image.height];
-      }
-
-      manager.loadAndRun(sketch, settings);
+  image.addEventListener('load', () => {
+    console.log('I EXECUTED UPON IMAGE \'load\' EVENT!');
+    let no_src = image.currentSrc.length === 0;
+    sketch = no_src ? defaultSketch : gaussianBlurSketch;
+    if (no_src) {
+      settings.dimensions = [2048, 2048];
+    } else {
+      settings.dimensions = [image.width, image.height];
     }
-  );
-}
-
+    manager.loadAndRun(sketch, settings);
+  });
+};
 let image;
 let manager;
 let sketch = defaultSketch;
 start();
 
-},{"canvas-sketch":2}],2:[function(require,module,exports){
+},{"./gaussianKernel":1,"canvas-sketch":3}],3:[function(require,module,exports){
 (function (global){(function (){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
@@ -2264,13 +2364,13 @@ start();
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 (function (global){(function (){
 
 global.CANVAS_SKETCH_DEFAULT_STORAGE_KEY = window.location.href;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}]},{},[1,3])
+},{}]},{},[2,4])
 
 //# sourceMappingURL=gaussianblur.js.map
