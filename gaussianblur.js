@@ -5,25 +5,22 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.generate_gaussian_kernel = generate_gaussian_kernel;
-function generate_gaussian_kernel(grid_size, standard_deviation) {
-  const half_size = Math.floor(grid_size / 2);
+function generate_gaussian_kernel(GRID_SIZE, standard_deviation) {
+  const half_size = Math.floor(GRID_SIZE / 2);
   let normalization_sum = 0;
-  const NORMALIZATION_FACTOR = 1 / Math.sqrt(2 * Math.PI) * standard_deviation; //could be unnecesarry, have to test performance gain/loss and final product
-  const standard22 = 2 * standard_deviation ** 2;
-  const kernel = new Float32Array(grid_size);
+
+  // const NORMALIZATION_FACTOR = 1 / (Math.sqrt(2 * Math.PI) * standard_deviation); //could be unnecesarry, have to test performance gain/loss and final product
+  const standard2 = 2 * standard_deviation * standard_deviation;
+  const kernel = new Float32Array(GRID_SIZE);
   for (let i = 0; i < kernel.length; i++) {
     const x = i - half_size;
-    kernel[i] = NORMALIZATION_FACTOR * Math.exp(-(x * x / standard22));
+    normalization_sum += kernel[i] = Math.exp(-(x * x / standard2));
   }
-  console.log("Normalization sum: ", normalization_sum);
-  const originalCopy = kernel.map(value => value);
-  console.log("Original kernel: ", originalCopy); //Only for debugging, deleting later.
 
   //Normalizing to avoid darkening or brightening the image
-  for (let x = 0; x < grid_size; x++) {
-    kernel[x] /= normalization_sum; //JavaScript sucks at math.
+  for (let x = 0; x < GRID_SIZE; x++) {
+    kernel[x] /= normalization_sum;
   }
-  console.log("kernel: ", kernel);
   return kernel;
 }
 
@@ -38,8 +35,9 @@ let settings = {
   canvas: gaussianCanvas,
   dimensions: [2048, 2048]
 };
-const STANDARD_DEVIATION = 1;
+const STANDARD_DEVIATION = 3;
 let GRID_SIZE;
+let HALF_SIZE;
 const defaultSketch = () => {
   return ({
     context,
@@ -53,6 +51,7 @@ const defaultSketch = () => {
 };
 const gaussianBlurSketch = async () => {
   GRID_SIZE = Math.floor(6 * STANDARD_DEVIATION) + 1;
+  HALF_SIZE = Math.floor(GRID_SIZE / 2);
   return ({
     context,
     width,
@@ -62,8 +61,8 @@ const gaussianBlurSketch = async () => {
     context.fillRect(0, 0, width, height);
     const imageData = grayscaleCanvas.getContext('2d').getImageData(0, 0, width, height);
     const kernel = (0, _gaussianKernel.generate_gaussian_kernel)(GRID_SIZE, STANDARD_DEVIATION);
-    let blurImageData = applyKernel(imageData, kernel, convolutionHorizontal);
-    blurImageData = applyKernel(blurImageData, kernel, convolutionVertical);
+    let blurImageData = applyKernel(imageData, kernel);
+    blurImageData = applyKernel(blurImageData, kernel, true);
     context.putImageData(blurImageData, 0, 0);
     console.log('Gaussian blur sketch rendered successfully! (Doesn\'t say it\'s displayed the way the user intended)');
   };
@@ -76,37 +75,46 @@ const getPixelsValue = (imageData, x, y) => {
 
   return pixels[OFFSET_COLUMN * x + OFFSET_ROW * y];
 };
-const getPixelsIndex = (x, y) => {
+const getPixelsIndex = (width, x, y) => {
   const PIXEL_DATA_WIDTH = 4; //Readability
-  const OFFSET_ROW = PIXEL_DATA_WIDTH * imageData.width;
+  const OFFSET_ROW = PIXEL_DATA_WIDTH * width;
   const OFFSET_COLUMN = PIXEL_DATA_WIDTH; //Readability
 
   return OFFSET_COLUMN * x + OFFSET_ROW * y;
 };
-const convolutionHorizontal = (x, y) => {
-  return [x, y];
-};
-const convolutionVertical = (x, y) => {
-  return [y, x];
-};
-const applyKernel = (imageData, kernel, convolutioDirection) => {
+const applyKernel = (imageData, kernel, rowOrderFirst = false) => {
   const newImageData = new ImageData(imageData.width, imageData.height);
   const HALF_SIZE = Math.floor(GRID_SIZE / 2);
-
-  //width and height vary
-  for (let y = 0; y < imageData.height; y++) {
-    for (let x = 0; x < imageData.width; x++) {
-      [x, y] = convolutioDirection(x, y);
-      let convolution = 0;
-      let pixelIndex;
-      for (let i = -HALF_SIZE; i < HALF_SIZE; i++) {
-        pixelIndex = getPixelsIndex(bounceCoordinate(x + i), bounceCoordinate(y + i));
-        convolution += imageData.data[pixelIndex] * kernel[i + HALF_SIZE];
+  if (!rowOrderFirst) {
+    for (let y = 0; y < imageData.height; y++) {
+      for (let x = 0; x < imageData.width; x++) {
+        let convolution = 0.00;
+        let pixelIndex;
+        for (let i = -HALF_SIZE; i < HALF_SIZE; i++) {
+          pixelIndex = getPixelsIndex(imageData.width, bounceCoordinate(x + i, imageData.width), y);
+          convolution += imageData.data[pixelIndex] * kernel[i + HALF_SIZE];
+        }
+        pixelIndex = getPixelsIndex(imageData.width, x, y);
+        newImageData.data[pixelIndex] = newImageData.data[pixelIndex + 1] = newImageData.data[pixelIndex + 2] = Math.min(255, Math.round(convolution));
+        newImageData.data[pixelIndex + 3] = imageData.data[pixelIndex + 3];
       }
-      newImageData[pixelIndex] = newImageData[pixelIndex + 1] = newImageData[pixelIndex + 2] = convolution;
-      newImageData[pixelIndex + 3] = 255;
+    }
+  } else {
+    for (let x = 0; x < imageData.width; x++) {
+      for (let y = 0; y < imageData.height; y++) {
+        let convolution = 0;
+        let pixelIndex;
+        for (let i = -HALF_SIZE; i < HALF_SIZE; i++) {
+          pixelIndex = getPixelsIndex(imageData.width, x, bounceCoordinate(y + i, imageData.height));
+          convolution += imageData.data[pixelIndex] * kernel[i + HALF_SIZE];
+        }
+        pixelIndex = getPixelsIndex(imageData.width, x, y);
+        newImageData.data[pixelIndex] = newImageData.data[pixelIndex + 1] = newImageData.data[pixelIndex + 2] = Math.min(255, Math.round(convolution));
+        newImageData.data[pixelIndex + 3] = imageData.data[pixelIndex + 3];
+      }
     }
   }
+  return newImageData;
 };
 const bounceCoordinate = (coord, max) => Math.abs((Math.abs(coord) + max) % (2 * max) - max); //Bounces the coordinate if necesarry to get the mirror padding.
 
