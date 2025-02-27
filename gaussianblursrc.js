@@ -2,8 +2,8 @@ const canvasSketch = require('canvas-sketch');
 
 import { generate_gaussian_kernel } from './gaussianKernel';
 
-const grayscaleCanvas = document.getElementById('grayscaleCanvas');
-const gaussianCanvas = document.getElementById('gaussianCanvas');
+const grayscaleCanvas = MyApp.grayscaleCanvas;
+const gaussianCanvas = MyApp.blurCanvas1;
 
 let settings = {
   canvas: gaussianCanvas,
@@ -27,7 +27,7 @@ const defaultSketch = () => {
 const gaussianBlurSketch = async () => {
 
   GRID_SIZE = Math.floor(6 * STANDARD_DEVIATION) + 1;
-  HALF_SIZE = Math.floor(GRID_SIZE / 2);
+  HALF_SIZE = GRID_SIZE / 2 | 0;
 
   return ({ context, width, height }) => {
     context.fillStyle = 'white';
@@ -46,15 +46,6 @@ const gaussianBlurSketch = async () => {
   };
 };
 
-const getPixelsValue = (imageData, x, y) => {
-  const pixels = imageData.data;
-  const PIXEL_DATA_WIDTH = 4; //Readability
-  const OFFSET_ROW    = PIXEL_DATA_WIDTH * imageData.width;
-  const OFFSET_COLUMN = PIXEL_DATA_WIDTH; //Readability
-
-  return pixels[OFFSET_COLUMN * x + OFFSET_ROW * y];
-}
-
 const getPixelsIndex = (width, x, y) => {
   const PIXEL_DATA_WIDTH = 4; //Readability
   const OFFSET_ROW    = PIXEL_DATA_WIDTH * width;
@@ -66,23 +57,17 @@ const getPixelsIndex = (width, x, y) => {
 const applyKernel = (imageData, kernel, rowOrderFirst=false) => {
   const newImageData = new ImageData(imageData.width, imageData.height);
   const HALF_SIZE = Math.floor(GRID_SIZE / 2);
-
   //Make modular
   if (!rowOrderFirst) { //Horizontal pass
     for(let y = 0; y < imageData.height; y++) { //y & x need to be interchangable for future modular function
       for(let x = 0; x < imageData.width; x++) {
-
-        let convolution = 0.00;
+        let convolution = 0;
         let pixelIndex;
-
         for(let i = -HALF_SIZE; i < HALF_SIZE; i++) {
-          pixelIndex = getPixelsIndex(imageData.width, bounceCoordinate(x + i, imageData.width), y); //Non repeatable for future modular function
+          pixelIndex = getPixelsIndex(imageData.width/*This never changes regardless of column-major/row-major order*/, bounceCoordinate(x + i, imageData.width), y); //Non repeatable for future modular function
           convolution += imageData.data[pixelIndex] * kernel[i + HALF_SIZE];
         }
-
-
         pixelIndex = getPixelsIndex(imageData.width, x, y);
-
         newImageData.data[pixelIndex] = newImageData.data[pixelIndex + 1] = newImageData.data[pixelIndex + 2] = Math.min(255, Math.round(convolution)); //I miss explicit typing
         newImageData.data[pixelIndex + 3] = imageData.data[pixelIndex + 3];
       }
@@ -90,17 +75,13 @@ const applyKernel = (imageData, kernel, rowOrderFirst=false) => {
   } else { //Vertical pass
     for(let x = 0; x < imageData.width; x++) {
       for(let y = 0; y < imageData.height; y++) {
-
         let convolution = 0;
         let pixelIndex;
-
         for(let i = -HALF_SIZE; i < HALF_SIZE; i++) {
-          pixelIndex = getPixelsIndex(imageData.width, x, bounceCoordinate(y + i, imageData.height));
+          pixelIndex = getPixelsIndex(imageData.width/*This never changes regardless of column-major/row-major order*/, x, bounceCoordinate(y + i, imageData.height));
           convolution += imageData.data[pixelIndex] * kernel[i + HALF_SIZE];
         }
-
         pixelIndex = getPixelsIndex(imageData.width, x, y);
-
         newImageData.data[pixelIndex] = newImageData.data[pixelIndex + 1] = newImageData.data[pixelIndex + 2] = Math.min(255, Math.round(convolution));
         newImageData.data[pixelIndex + 3] = imageData.data[pixelIndex + 3];
       }
@@ -110,7 +91,7 @@ const applyKernel = (imageData, kernel, rowOrderFirst=false) => {
   return newImageData;
 }
 
-const bounceCoordinate = (coord, max) => Math.abs((Math.abs(coord) + max) % (2 * max) - max); //Bounces the coordinate if necesarry to get the mirror padding.
+const bounceCoordinate = (coord, max) => Math.abs((Math.abs(coord) + max) % (2 * max) - max); //Bounces/reflects the coordinate if necesarry to get the mirror padding.
 
 
 const getSharedImageElement = () => {

@@ -38,6 +38,8 @@
               imageUpload: document.getElementById('imageUpload'),
               sharedImage: new Image(),
               grayscaleCanvas: document.getElementById('grayscaleCanvas'),
+              blurCanvas1: document.getElementById('blurCanvas1'),
+              blurCanvas2: document.getElementById('blurCanvas2'),
             }
 
             MyApp.imageUpload.addEventListener('change', handleImageUploadChange);
@@ -47,7 +49,6 @@
 
         <label for="imagePreviewDimensions">Dimensions: </label>
         <span id="imagePreviewDimensions"></span>
-        <p>(Option for "persistent pictures"; saving picture file path and using it without asking for a picture)</p>
 
         <script src="getimage.js"></script>
 
@@ -64,9 +65,12 @@
         <script src="grayscale.js"></script>
 
         <h3>Applying Gaussian Blur</h3>
-        <p>Utilizing a gaussian kernel we apply the gaussian blur across the whole image, utilizing mirror padding.</p>
-        <canvas id="gaussianCanvas"></canvas>
+        <p>Video here.</p>
+        <canvas id="blurCanvas1"></canvas>
         <script src="gaussianblur.js"></script>
+
+        <!-- <canvas id="blurCanvas2"></canvas> -->
+        <!-- <script src="gaussianblur.js"></script> -->
     </body>
 </html>
 

@@ -1,5 +1,5 @@
 export function generate_gaussian_kernel(GRID_SIZE, standard_deviation) {
-  const half_size = Math.floor(GRID_SIZE / 2);
+  const half_size = GRID_SIZE / 2 | 0;
   let normalization_sum = 0;
   
   // const NORMALIZATION_FACTOR = 1 / (Math.sqrt(2 * Math.PI) * standard_deviation); //could be unnecesarry, have to test performance gain/loss and final product

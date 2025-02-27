@@ -63,7 +63,7 @@ const gaussianBlurSketch = async () => {
     const kernel = (0, _gaussianKernel.generate_gaussian_kernel)(GRID_SIZE, STANDARD_DEVIATION);
     let blurImageData = applyKernel(imageData, kernel);
     blurImageData = applyKernel(blurImageData, kernel, true);
-    context.putImageData(blurImageData, 0, 0);
+    context.putImageData(blurImageData, 0, 0); //Unusual clipping at the bottom
     console.log('Gaussian blur sketch rendered successfully! (Doesn\'t say it\'s displayed the way the user intended)');
   };
 };
@@ -85,21 +85,26 @@ const getPixelsIndex = (width, x, y) => {
 const applyKernel = (imageData, kernel, rowOrderFirst = false) => {
   const newImageData = new ImageData(imageData.width, imageData.height);
   const HALF_SIZE = Math.floor(GRID_SIZE / 2);
+
+  //Make modular
   if (!rowOrderFirst) {
+    //Horizontal pass
     for (let y = 0; y < imageData.height; y++) {
+      //y & x need to be interchangable for future modular function
       for (let x = 0; x < imageData.width; x++) {
-        let convolution = 0.00;
+        let convolution = 0;
         let pixelIndex;
         for (let i = -HALF_SIZE; i < HALF_SIZE; i++) {
-          pixelIndex = getPixelsIndex(imageData.width, bounceCoordinate(x + i, imageData.width), y);
+          pixelIndex = getPixelsIndex(imageData.width, bounceCoordinate(x + i, imageData.width), y); //Non repeatable for future modular function
           convolution += imageData.data[pixelIndex] * kernel[i + HALF_SIZE];
         }
         pixelIndex = getPixelsIndex(imageData.width, x, y);
-        newImageData.data[pixelIndex] = newImageData.data[pixelIndex + 1] = newImageData.data[pixelIndex + 2] = Math.min(255, Math.round(convolution));
+        newImageData.data[pixelIndex] = newImageData.data[pixelIndex + 1] = newImageData.data[pixelIndex + 2] = Math.min(255, Math.round(convolution)); //I miss explicit typing
         newImageData.data[pixelIndex + 3] = imageData.data[pixelIndex + 3];
       }
     }
   } else {
+    //Vertical pass
     for (let x = 0; x < imageData.width; x++) {
       for (let y = 0; y < imageData.height; y++) {
         let convolution = 0;
@@ -116,7 +121,7 @@ const applyKernel = (imageData, kernel, rowOrderFirst = false) => {
   }
   return newImageData;
 };
-const bounceCoordinate = (coord, max) => Math.abs((Math.abs(coord) + max) % (2 * max) - max); //Bounces the coordinate if necesarry to get the mirror padding.
+const bounceCoordinate = (coord, max) => Math.abs((Math.abs(coord) + max) % (2 * max) - max); //Bounces/reflects the coordinate if necesarry to get the mirror padding.
 
 const getSharedImageElement = () => {
   console.log("Attempting to return sharedImageElement!");
