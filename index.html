@@ -1,77 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8">
+    
+    <style>
+      img {
+        border: none;
+        display: block;
+      }
 
-        <style>
-            img {
-                border: none;
-                display: block;
-            }
+      .imgloaded {
+        border: 3px solid black;
+        width: 300px;
+        height: auto;
+      }
+      
+      canvas {
+        margin: auto;
+        display: block;
+        box-shadow: 0px 2px 12px -2px rgba(0, 0, 0, 0.15);
+      }     
+      </style>
 
-            .imgloaded {
-                border: 3px solid black;
-                width: 300px;
-                height: auto;
-            }
+</head>
+<body>
+  <script src="getimage.js"></script>
+  
+  <h1>Photo Pixel Manipulation</h1>
+  <h2>Stuff we need beforehand</h2>
+  <label for="imageUpload">Select an image: </label>
+  <input type="file" id="imageUpload" name="imageUpload" accept=".jpg, .jpeg, .png" /><br><br>
+  <span style="font-weight: bold;">PREVIEW</span>
+  <img src="" id="imagePreview" width="300"/>
+  <script>
+    (function () {
+      window.MyApp = {
+        imageUpload: document.getElementById('imageUpload'),
+        sharedImage: new Image(),
+        grayscaleCanvas: document.getElementById('grayscaleCanvas'),
+      }
+      
+      MyApp.imageUpload.addEventListener('change', handleImageUploadChange);
+    })();
+    
+  </script>
 
-            canvas {
-                margin: auto;
-                display: block;
-                box-shadow: 0px 2px 12px -2px rgba(0, 0, 0, 0.15);
-             }     
-        </style>
+  <label for="imagePreviewDimensions">Dimensions: </label>
+  <span id="imagePreviewDimensions"></span>
 
-    </head>
-    <body>
-        <script src="getimage.js"></script>
+  <script src="getimage.js"></script>
 
-        <h1>Photo Pixel Manipulation</h1>
-        <h2>Stuff we need beforehand</h2>
-        <label for="imageUpload">Select an image: </label>
-        <input type="file" id="imageUpload" name="imageUpload" accept=".jpg, .jpeg, .png" /><br><br>
-        <span style="font-weight: bold;">PREVIEW</span>
-        <img src="" id="imagePreview" width="300"/>
-        <script>
-          (function () {
-            window.MyApp = {
-              imageUpload: document.getElementById('imageUpload'),
-              sharedImage: new Image(),
-              grayscaleCanvas: document.getElementById('grayscaleCanvas'),
-              blurCanvas1: document.getElementById('blurCanvas1'),
-              blurCanvas2: document.getElementById('blurCanvas2'),
-            }
-
-            MyApp.imageUpload.addEventListener('change', handleImageUploadChange);
-          })();
-
-        </script>
-
-        <label for="imagePreviewDimensions">Dimensions: </label>
-        <span id="imagePreviewDimensions"></span>
-
-        <script src="getimage.js"></script>
-
-        <h2>Crop</h2>
-        <p>First, we have to crop! (I'll add this stuff later)</p>
-        <input type="number" id="crop_x">
-        <input type="number" id="crop_y">
+  <h2>Crop</h2>
+  <p>First, we have to crop! (I'll add this stuff later)</p>
+  <input type="number" id="crop_x">
+  <input type="number" id="crop_y">
 
 
-        <h3>Grayscale</h3>
-        <p>Grayscaling is done by calculating the luminosity of each pixel using</p>
-        <!-- program i made -->
-        <canvas id="grayscaleCanvas" ></canvas>
-        <script src="grayscale.js"></script>
+  <h3>Grayscale</h3>
+  <p>Grayscaling is done by calculating the luminosity of each pixel using</p>
+  <!-- program i made -->
+  <canvas id="grayscaleCanvas" ></canvas>
+  <script src="grayscale.js"></script>
 
-        <h3>Applying Gaussian Blur</h3>
-        <p>Video here.</p>
-        <canvas id="blurCanvas1"></canvas>
-        <script src="gaussianblur.js"></script>
+  <h3>Applying Gaussian Blur</h3>
+  <p>Video here.</p>
+  <div class="blur-container">
+    <canvas class="blurCanvas"></canvas>
+    <input type="range" class="sigma-input" min="1" max="5" value="1">
+  </div>
+  <div class="blur-container">
+    <canvas class="blurCanvas"></canvas>
+    <input type="range" class="sigma-input" min="1" max="5" value="1">
+  </div>
+  <button id="applyBlur">Apply Blur</button>
+
+  <script src="gaussianblur.js"></script>
+  <script>
+    document.getElementById('applyBlur').addEventListener('click', () =>
+      document.querySelectorAll('.blur-container').forEach((nodeList) => {
+        const canvas = nodeList.querySelector('.blurCanvas');
+        const sigma_input = parseFloat(nodeList.querySelector('.sigma-input')?.value);
+        MyApp.setBlur(canvas, sigma_input);
+        })
+      );
+  </script>
+
 
         <!-- <canvas id="blurCanvas2"></canvas> -->
         <!-- <script src="gaussianblur.js"></script> -->
-    </body>
+  </body>
 </html>
 
 
