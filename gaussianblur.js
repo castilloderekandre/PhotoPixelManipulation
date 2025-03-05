@@ -24,7 +24,7 @@ const gaussianBlurSketch = () => {
     let blurImageData = applyKernel(imageData, kernel);
     blurImageData = applyKernel(blurImageData, kernel, true);
     
-    ctx.putImageData(blurImageData, 0, 0); //Unusual clipping at the bottom
+    ctx.putImageData(blurImageData, 0, 0);
     console.log('Gaussian blur sketch rendered successfully! (Doesn\'t say it\'s displayed the way the user intended)');
 
   };
@@ -45,9 +45,9 @@ const applyKernel = (imageData, kernel, rowOrderFirst=false) => {
       for(let x = 0; x < imageData.width; x++) {
         let convolution = 0;
         let pixelIndex;
-        for(let i = -HALF_SIZE; i < HALF_SIZE; i++) {
-          pixelIndex = getPixelsIndex(imageData.width/*This never changes regardless of column-major/row-major order*/, bounceCoordinate(x + i, imageData.width), y); //Non repeatable for future modular function
-          convolution += imageData.data[pixelIndex] * kernel[i + HALF_SIZE];
+        for(let offset = -HALF_SIZE; offset < HALF_SIZE; offset++) {
+          pixelIndex = getPixelsIndex(imageData.width/*This never changes regardless of column-major/row-major order*/, bounceCoordinate(x + offset, imageData.width - 1 /*subtract 1 for 0-based array indexing*/), y); //Non repeatable for future modular function
+          convolution += imageData.data[pixelIndex] * kernel[offset + HALF_SIZE];
         }
         pixelIndex = getPixelsIndex(imageData.width, x, y);
         newImageData.data[pixelIndex] = newImageData.data[pixelIndex + 1] = newImageData.data[pixelIndex + 2] = Math.min(255, Math.round(convolution)); //I miss explicit typing
@@ -59,9 +59,9 @@ const applyKernel = (imageData, kernel, rowOrderFirst=false) => {
       for(let y = 0; y < imageData.height; y++) {
         let convolution = 0;
         let pixelIndex;
-        for(let i = -HALF_SIZE; i < HALF_SIZE; i++) {
-          pixelIndex = getPixelsIndex(imageData.width/*This never changes regardless of column-major/row-major order*/, x, bounceCoordinate(y + i, imageData.height));
-          convolution += imageData.data[pixelIndex] * kernel[i + HALF_SIZE];
+        for(let offset = -HALF_SIZE; offset < HALF_SIZE; offset++) {
+          pixelIndex = getPixelsIndex(imageData.width/*This never changes regardless of column-major/row-major order*/, x, bounceCoordinate(y + offset, imageData.height - 1));
+          convolution += imageData.data[pixelIndex] * kernel[offset + HALF_SIZE];
         }
         pixelIndex = getPixelsIndex(imageData.width, x, y);
         newImageData.data[pixelIndex] = newImageData.data[pixelIndex + 1] = newImageData.data[pixelIndex + 2] = Math.min(255, Math.round(convolution));
@@ -76,7 +76,7 @@ const applyKernel = (imageData, kernel, rowOrderFirst=false) => {
 const bounceCoordinate = (coord, max) => Math.abs((Math.abs(coord) + max) % (2 * max) - max); //Bounces/reflects the coordinate if necesarry to get the mirror padding.
 
 const setSigmaAndRun = async (newcanvas, sigmaValue) => {
-  image = MyApp.sharedImage; //Still necesarry to determine 
+  image = MyApp.sharedImage; //Still necesarry to determine canvas dimensions.
   
   canvas = newcanvas;
   canvas.width = image.width;
@@ -89,7 +89,6 @@ const setSigmaAndRun = async (newcanvas, sigmaValue) => {
  
 
 const generate_gaussian_kernel = (GRID_SIZE, standard_deviation) => {
-  const half_size = GRID_SIZE / 2 | 0;
   let normalization_sum = 0;
   
   // const NORMALIZATION_FACTOR = 1 / (Math.sqrt(2 * Math.PI) * standard_deviation); //could be unnecesarry, have to test performance gain/loss and final product
@@ -98,7 +97,7 @@ const generate_gaussian_kernel = (GRID_SIZE, standard_deviation) => {
   const kernel = new Float32Array(GRID_SIZE);
   
   for(let i = 0; i < kernel.length; i++) {
-    const x = i - half_size;
+    const x = i - HALF_SIZE;
     normalization_sum += kernel[i] = Math.exp(-((x * x) / standard2));
   }
 
