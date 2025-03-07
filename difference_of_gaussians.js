@@ -35,7 +35,7 @@ const applyDoG = () => {
 
   for(let i = 0; i < blurImageData1.data.length; i += 4) {
     dogImageData.data[i] = dogImageData.data[i + 1] = dogImageData.data[i + 2] = blurImageData2.data[i] - blurImageData1.data[i];
-    dogImageData.data[i + 3] = blurImageData1.data[i + 3];
+    dogImageData.data[i + 3] = 255;
   }
 
   return dogImageData;
