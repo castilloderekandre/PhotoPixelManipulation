@@ -13,13 +13,7 @@
         border: 3px solid black;
         width: 300px;
         height: auto;
-      }
-      
-      canvas {
-        margin: auto;
-        display: block;
-        box-shadow: 0px 2px 12px -2px rgba(0, 0, 0, 0.15);
-      }     
+      }    
       </style>
 
 </head>
@@ -37,7 +31,6 @@
       window.MyApp = {
         imageUpload: document.getElementById('imageUpload'),
         sharedImage: new Image(),
-        grayscaleCanvas: document.getElementById('grayscaleCanvas'),
       }
       
       MyApp.imageUpload.addEventListener('change', handleImageUploadChange);
@@ -64,30 +57,38 @@
 
   <h3>Applying Gaussian Blur</h3>
   <p>Video here.</p>
-  <div class="blur-container">
-    <canvas class="blurCanvas"></canvas>
-    <input type="range" class="sigma-input" min="1" max="5" value="1">
-  </div>
-  <div class="blur-container">
-    <canvas class="blurCanvas"></canvas>
-    <input type="range" class="sigma-input" min="1" max="5" value="1">
+  <div style="display: flex;">
+    <div class="blur-container" style="flex: 1;">
+      <canvas class="blurCanvas"></canvas>
+      <input type="range" class="sigma-input" min="1" max="5" value="1">
+    </div>
+    <div class="blur-container" style="flex: 1">
+      <canvas class="blurCanvas"></canvas>
+      <input type="range" class="sigma-input" min="1" max="5" value="1">
+    </div>
   </div>
   <button id="applyBlur">Apply Blur</button>
 
+  <script src="difference_of_gaussians.js"></script>
   <script src="gaussianblur.js"></script>
   <script>
-    document.getElementById('applyBlur').addEventListener('click', () =>
+    document.getElementById('applyBlur').addEventListener('click', () => {
       document.querySelectorAll('.blur-container').forEach((nodeList) => {
         const canvas = nodeList.querySelector('.blurCanvas');
         const sigma_input = parseFloat(nodeList.querySelector('.sigma-input')?.value);
         MyApp.setBlur(canvas, sigma_input);
-        })
-      );
+      });
+
+      dogDraw();
+    });
   </script>
 
+  <h3>Difference of Gaussians</h3>
 
-        <!-- <canvas id="blurCanvas2"></canvas> -->
-        <!-- <script src="gaussianblur.js"></script> -->
+  <canvas id="dogCanvas"></canvas>
+    
+
+
   </body>
 </html>
 
