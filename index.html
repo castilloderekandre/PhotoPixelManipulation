@@ -13,12 +13,20 @@
         border: 3px solid black;
         width: 300px;
         height: auto;
-      }    
-      </style>
+      }
+      
+      .blur-container {
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+      }
 
+      .sigma-input {
+        padding: 20px;
+      }
+    </style>
 </head>
 <body>
-  <script src="getimage.js"></script>
   
   <h1>Photo Pixel Manipulation</h1>
   <h2>Stuff we need beforehand</h2>
@@ -26,47 +34,65 @@
   <input type="file" id="imageUpload" name="imageUpload" accept=".jpg, .jpeg, .png" /><br><br>
   <span style="font-weight: bold;">PREVIEW</span>
   <img src="" id="imagePreview" width="300"/>
+  
   <script>
-    (function () {
-      window.MyApp = {
-        imageUpload: document.getElementById('imageUpload'),
-        sharedImage: new Image(),
+    window.MyApp = {
+      sharedImage: new Image(),
+    }
+
+    window.MyApp.sharedImage.addEventListener(
+      'load',
+      () => {
+        window.MyApp.grayscaleSketch(document.getElementById('grayscaleCanvas'));
       }
-      
-      MyApp.imageUpload.addEventListener('change', handleImageUploadChange);
-    })();
-    
+    );
+
+    document.getElementById('imageUpload').addEventListener(
+      'change',
+      () => {
+        const reader = new FileReader();
+        reader.addEventListener(
+          'load', 
+          () => { 
+            window.MyApp.sharedImage.src = reader.result;
+            const previewImage = document.getElementById('imagePreview');
+            previewImage.src = reader.result;
+          },
+        );
+
+        reader.onerror = (error) => {
+          console.error("Failed to read file! ", error);
+        }
+
+        reader.readAsDataURL(document.getElementById('imageUpload').files[0]);
+      }
+    );
   </script>
+  <script src="grayscale.js"></script>
+  <script src="difference_of_gaussians.js"></script>
+  <script src="gaussianblur.js"></script>
 
   <label for="imagePreviewDimensions">Dimensions: </label>
   <span id="imagePreviewDimensions"></span>
-
-  <script src="getimage.js"></script>
-
-  <h2>Crop</h2>
-  <p>First, we have to crop! (I'll add this stuff later)</p>
-  <input type="number" id="crop_x">
-  <input type="number" id="crop_y">
-
-
+  
+  
   <h3>Grayscale</h3>
   <p>Grayscaling is done by calculating the luminosity of each pixel using</p>
   <!-- program i made -->
   <canvas id="grayscaleCanvas" ></canvas>
-  <script src="grayscale.js"></script>
 
   <h3>Applying Gaussian Blur</h3>
   <p>Video here.</p>
 
   <div style="display: flex;">
 
-    <div class="blur-container" style="flex: 1;">
+    <div class="blur-container">
       <canvas class="blurCanvas"></canvas>
       <input type="range" class="sigma-input" min="1" max="15" value="1" step="0.1">
       <p>Value <output class="sigma-value">1</output></p>
     </div>
 
-    <div class="blur-container" style="flex: 1">
+    <div class="blur-container">
       <canvas class="blurCanvas"></canvas>
       <input type="range" class="sigma-input" min="1" max="15" value="1.6" step="0.1">
       <p>Value <output class="sigma-value">1.6</output></p>
@@ -81,14 +107,12 @@
 
   <button id="applyBlur">Apply Blur</button>
 
-  <script src="difference_of_gaussians.js"></script>
-  <script src="gaussianblur.js"></script>
   <script>
     document.getElementById('applyBlur').addEventListener('click', () => {
       document.querySelectorAll('.blur-container').forEach((nodeList) => {
         const canvas = nodeList.querySelector('.blurCanvas');
         const sigma_input = parseFloat(nodeList.querySelector('.sigma-input')?.value);
-        MyApp.setBlur(canvas, sigma_input);
+        setSigmaAndRun(canvas, sigma_input);
       });
 
       dogDraw();
@@ -96,7 +120,6 @@
   </script>
 
   <h3>Difference of Gaussians</h3>
-
   <canvas id="dogCanvas"></canvas>
     
 

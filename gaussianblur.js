@@ -75,7 +75,7 @@ const applyKernel = (imageData, kernel, rowOrderFirst=false) => {
 
 const bounceCoordinate = (coord, max) => Math.abs((Math.abs(coord) + max) % (2 * max) - max); //Bounces/reflects the coordinate if necesarry to get the mirror padding.
 
-const setSigmaAndRun = async (newcanvas, sigmaValue) => {
+async function setSigmaAndRun (newcanvas, sigmaValue) {
   image = MyApp.sharedImage; //Still necesarry to determine canvas dimensions.
   
   canvas = newcanvas;
@@ -110,4 +110,3 @@ const generate_gaussian_kernel = (GRID_SIZE, standard_deviation) => {
 }
 
 let image;
-window.MyApp.setBlur = setSigmaAndRun;
