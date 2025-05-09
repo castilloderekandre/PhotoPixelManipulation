@@ -40,21 +40,31 @@ const getPixelsIndex = (width, x, y) => {
 const applyKernel = (imageData, kernel, rowOrderFirst=false) => {
   const newImageData = new ImageData(imageData.width, imageData.height);
   //Make modular
-  if (!rowOrderFirst) { //Horizontal pass
-    for(let y = 0; y < imageData.height; y++) { //y & x need to be interchangable for future modular function
+  if (!rowOrderFirst) { //Perform horizontal pass
+    for(let y = 0; y < imageData.height; y++) { //[TODO] make y & x interchangable
       for(let x = 0; x < imageData.width; x++) {
         let convolution = 0;
         let pixelIndex;
         for(let offset = -HALF_SIZE; offset < HALF_SIZE; offset++) {
-          pixelIndex = getPixelsIndex(imageData.width/*This never changes regardless of column-major/row-major order*/, bounceCoordinate(x + offset, imageData.width - 1 /*subtract 1 for 0-based array indexing*/), y); //Non repeatable for future modular function
+          pixelIndex = getPixelsIndex(
+            imageData.width, //Width is used to map 1D array to a 2D grid
+            bounceCoordinate(x + offset, imageData.width - 1),
+            y 
+          );
           convolution += imageData.data[pixelIndex] * kernel[offset + HALF_SIZE];
         }
+        
         pixelIndex = getPixelsIndex(imageData.width, x, y);
-        newImageData.data[pixelIndex] = newImageData.data[pixelIndex + 1] = newImageData.data[pixelIndex + 2] = Math.min(255, Math.round(convolution)); //I miss explicit typing
+        
+        // Apply convolution result to RGB channels, clamping values to 255
+        newImageData.data[pixelIndex] = 
+        newImageData.data[pixelIndex + 1] = 
+        newImageData.data[pixelIndex + 2] = Math.min(255, Math.round(convolution));
+        
         newImageData.data[pixelIndex + 3] = imageData.data[pixelIndex + 3];
       }
     }
-  } else { //Vertical pass
+  } else { // Vertical pass
     for(let x = 0; x < imageData.width; x++) {
       for(let y = 0; y < imageData.height; y++) {
         let convolution = 0;
