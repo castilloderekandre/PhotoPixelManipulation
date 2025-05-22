@@ -3,7 +3,7 @@
  * @param {number} x - The x coordinate
  * @param {number} y - THe y coordinate
  */
-const spatialKernel = (
+export const spatialKernel = (
     x: number,
     y: number,
     xo: number,
@@ -14,7 +14,7 @@ const spatialKernel = (
   return Math.exp( -((x - xo)**2 + (y-yo)**2) / sigma2 );
 }
 
-const rangeKernel = (i, io, sigma) => { // intensity input
+export const rangeKernel = (i, io, sigma) => { // intensity input
   // just normal gaussian function
   const sigma2 = 2 * sigma * sigma;
   return Math.exp( -((i - io)**2) / sigma2 );
@@ -34,10 +34,9 @@ const getPixelIndex = (width, x, y) => {
 }
 
 const bilateralfilter = (grayscale_canvas, new_canvas) => {
-  ctx = new_canvas.getContext('2d');
+  const ctx = new_canvas.getContext('2d');
   const width = new_canvas.width = grayscale_canvas.width;
   const height = new_canvas.height = grayscale_canvas.height;
-  GRID_SIZE = Math.floor(6 * STANDARD_DEVIATION) + 1;
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, width, height);
 
@@ -45,7 +44,6 @@ const bilateralfilter = (grayscale_canvas, new_canvas) => {
   const bilateralfilter = applyKernels(grayscaleImageData);
 
   ctx.putImageData(bilateralfilter, 0, 0);
-  dogHelper();
 }
 
 const applyKernels = (grayscaleImageData) => {
@@ -96,7 +94,7 @@ const applyKernels = (grayscaleImageData) => {
   return bilateralfilter;
 }
 
-// const bounceCoordinate = (coord, max) => Math.abs(coord) & max; //Bounces/reflects the coordinate if necesarry to get the mirror padding.
+const bounceCoordinate = (coord, max) => Math.abs(coord) & max; //Bounces/reflects the coordinate if necesarry to get the mirror padding.
 
 const KERNEL_SIZE = 7;
 const KERNEL_HALF_SIZE = Math.floor(KERNEL_SIZE / 2);
