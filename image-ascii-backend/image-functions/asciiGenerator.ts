@@ -1,4 +1,5 @@
 import bilateralfilter from "./bilateralFilter";
+import * as ffmpeg from "@ffmpeg/core";
 
 /**
  * The AsciiGenerator class manages the functionality for converting an image into ASCii.
@@ -13,6 +14,7 @@ class AsciiGenerator {
 
     constructor() {
         this.imageResult = "";
+        ffmpeg()
     }
 
     /** The core entrypoint for creating an image.
