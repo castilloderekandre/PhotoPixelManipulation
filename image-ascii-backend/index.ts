@@ -3,7 +3,6 @@ import express, { Express, Request, Response , Application } from 'express';
 import dotenv from 'dotenv';
 
 import AsciiGenerator from './image-functions/asciiGenerator';
-import bilateralfilter from './image-functions/bilateralFilter';
 
 import type { ImageGenerationRequest } from './api/asciiApi';
 
