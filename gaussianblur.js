@@ -12,12 +12,12 @@ let HALF_SIZE;
 const gaussianBlurSketch = () => {
     const width = canvas.width;
     const height = canvas.height;
-    GRID_SIZE = Math.floor(6 * STANDARD_DEVIATION) + 1;
+    GRID_SIZE = Math.floor(6 * STANDARD_DEVIATION) + 1;                 
     HALF_SIZE = GRID_SIZE / 2 | 0;
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, width, height);
 
-    const imageData = document.getElementById('grayscaleCanvas').getContext('2d').getImageData(0, 0, width, height);
+    const imageData = document.getElementById('bilateralfilterCanvas').getContext('2d').getImageData(0, 0, width, height);
 
     const kernel = generate_gaussian_kernel(GRID_SIZE, STANDARD_DEVIATION);
     
@@ -40,6 +40,18 @@ const getPixelsIndex = (width, x, y) => {
 const applyKernel = (imageData, kernel, rowOrderFirst=false) => {
   const newImageData = new ImageData(imageData.width, imageData.height);
   //Make modular
+  // for (let p = 0; p < 2; p++) {
+  //   for(let window_index = -KERNEL_HALF_SIZE; window_index < KERNEL_HALF_SIZE; window_index++) {
+
+  //     let x = bounceCoordinate(i * (p === 0) + j * p + window_index * p, grayscaleImageData.width - 1);
+  //     let y = bounceCoordinate(j * (p === 0) + i * p + window_index * p, grayscaleImageData.height - 1);
+
+  //     const intensity = grayscaleImageData.data[getPixelIndex(grayscaleImageData.width, x, y)]
+      
+      
+  //   }
+  // }
+
   if (!rowOrderFirst) { //Perform horizontal pass
     for(let y = 0; y < imageData.height; y++) { //[TODO] make y & x interchangable
       for(let x = 0; x < imageData.width; x++) {
@@ -70,7 +82,11 @@ const applyKernel = (imageData, kernel, rowOrderFirst=false) => {
         let convolution = 0;
         let pixelIndex;
         for(let offset = -HALF_SIZE; offset < HALF_SIZE; offset++) {
-          pixelIndex = getPixelsIndex(imageData.width/*This never changes regardless of column-major/row-major order*/, x, bounceCoordinate(y + offset, imageData.height - 1));
+          pixelIndex = getPixelsIndex(
+            imageData.width/*This never changes regardless of column-major/row-major order*/, 
+            x, 
+            bounceCoordinate(y + offset, imageData.height - 1)
+          );
           convolution += imageData.data[pixelIndex] * kernel[offset + HALF_SIZE];
         }
         pixelIndex = getPixelsIndex(imageData.width, x, y);

@@ -11,5 +11,5 @@ const port = process.env.PORT || 8000;
 app.use(express.json());
 app.use('/api/imageGenerator', imageGeneratorRouters);
 app.listen(port, () => {
-  console.log(`Server is Fire at http://localhost:${port}`);
+  console.log(`Server is fired at http://localhost:${port}`);
 });

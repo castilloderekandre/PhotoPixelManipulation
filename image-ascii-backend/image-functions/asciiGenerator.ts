@@ -7,6 +7,7 @@ import * as ffmpeg from "@ffmpeg/core";
  * * jpeg
  * * jpeg base64
  * * png
+ * * txt
  */
 class AsciiGenerator {
 
@@ -14,7 +15,7 @@ class AsciiGenerator {
 
     constructor() {
         this.imageResult = "";
-        ffmpeg()
+        ffmpeg();
     }
 
     /** The core entrypoint for creating an image.

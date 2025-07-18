@@ -1,20 +1,34 @@
 /**
  * Returns the cartesian distance between two points on a pixel grid.
- * @param {number} x - The x coordinate
- * @param {number} y - THe y coordinate
+ * @param x - The x coordinate
+ * @param y - The y coordinate
+ * @param xo - The anchor/center x coordinate
+ * @param yo - The anchor/center y coordinate
+ * @returns cartesian distance
  */
-export const spatialKernel = (
+const spatialKernel = (
     x: number,
     y: number,
     xo: number,
     yo: number,
     sigma: number
-) => {
+): number => {
   const sigma2 = 2 * sigma * sigma;
   return Math.exp( -((x - xo)**2 + (y-yo)**2) / sigma2 );
 }
 
-export const rangeKernel = (i, io, sigma) => { // intensity input
+/**
+ * 
+ * @param i - p in pixel intensity
+ * @param io - The anchor/center pixel intensity
+ * @param sigma - Coeficient controlling width of gaussian curve
+ * @returns 
+ */
+const rangeKernel = (
+  i: number, 
+  io: number, 
+sigma: number,
+): number => { // intensity input
   // just normal gaussian function
   const sigma2 = 2 * sigma * sigma;
   return Math.exp( -((i - io)**2) / sigma2 );
@@ -25,7 +39,19 @@ export const rangeKernel = (i, io, sigma) => { // intensity input
 //   return Math.exp( -((p - q)**2) / sigma2 );
 // }
 
-const getPixelIndex = (width, x, y) => {
+/**
+ * Through row-major flattening, it returns the index for a 1D array.
+ * Width is necessary to 
+ * @param width - Width of the image in pixel
+ * @param x - Desired X
+ * @param y - Desired Y
+ * @returns Index of Red channel
+ */
+const getPixelIndex = (
+  width: number,
+  x: number,
+  y: number
+): number => {
   const PIXEL_DATA_WIDTH = 4; //Readability
   const OFFSET_ROW    = PIXEL_DATA_WIDTH * width;
   const OFFSET_COLUMN = PIXEL_DATA_WIDTH; //Readability
@@ -33,24 +59,36 @@ const getPixelIndex = (width, x, y) => {
   return OFFSET_COLUMN * x + OFFSET_ROW * y;
 }
 
-const bilateralfilter = (grayscale_canvas, new_canvas) => {
-  const ctx = new_canvas.getContext('2d');
-  const width = new_canvas.width = grayscale_canvas.width;
-  const height = new_canvas.height = grayscale_canvas.height;
+/**
+ * Applies a bilateral filter over an image
+ * @param grayscale_canvas 
+ * @param new_canvas 
+ * @returns filtered imagea
+ */
+const bilateralfilter = (
+  grayscale_canvas: HTMLCanvasElement,
+  new_canvas: HTMLCanvasElement,
+  KERNEL_SIZE: number
+): void => {
+
+  const ctx: CanvasRenderingContext2D = new_canvas.getContext('2d')!;
+
+  const width: number = new_canvas.width = grayscale_canvas.width;
+  const height: number = new_canvas.height = grayscale_canvas.height;
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, width, height);
 
-  const grayscaleImageData = grayscale_canvas.getContext('2d').getImageData(0, 0, grayscale_canvas.width, grayscale_canvas.height); // [TODO] CHECK FOR NULL
-  const bilateralfilter = applyKernels(grayscaleImageData);
+  const grayscaleImageData: ImageData = grayscale_canvas.getContext('2d')!.getImageData(0, 0, grayscale_canvas.width, grayscale_canvas.height);
+  const bilateralfilter: ImageData = applyKernels(grayscaleImageData, KERNEL_SIZE);
 
   ctx.putImageData(bilateralfilter, 0, 0);
 }
 
-const applyKernels = (grayscaleImageData) => {
+const applyKernels = (grayscaleImageData: ImageData, KERNEL_SIZE: number): ImageData => {
 
-  let bilateralfilter = new ImageData(grayscaleImageData.width, grayscaleImageData.height);
+  let bilateralfilter: ImageData = new ImageData(grayscaleImageData.width, grayscaleImageData.height);
 
-  let spatial_kernel = Array.from(
+  let spatial_kernel: number[][] = Array.from(
     { length: KERNEL_SIZE },
     (_, i) => Array.from(
       { length: KERNEL_SIZE },
@@ -94,12 +132,11 @@ const applyKernels = (grayscaleImageData) => {
   return bilateralfilter;
 }
 
-const bounceCoordinate = (coord, max) => Math.abs(coord) & max; //Bounces/reflects the coordinate if necesarry to get the mirror padding.
+const bounceCoordinate = (coord: number, max: number): number => Math.abs(coord) & max; //Bounces/reflects the coordinate if necesarry to get the mirror padding.
 
 const KERNEL_SIZE = 7;
 const KERNEL_HALF_SIZE = Math.floor(KERNEL_SIZE / 2);
 const SPATIAL_SIGMA = 4;
 const RANGE_SIGMA = 4;
-const ROOT_DIRECTORY = 'http://localhost:8080/'
 
 export default bilateralfilter;

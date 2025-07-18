@@ -35,15 +35,13 @@
   <span style="font-weight: bold;">PREVIEW</span>
   <img src="" id="imagePreview" width="300"/>
   
-  <script>
-    window.MyApp = {
-      sharedImage: new Image(),
-    }
+  <script type="module">
+    import { sourceImageUpdater, grayscaleImage } from 'http://localhost:8080/utils.js';
 
-    window.MyApp.sharedImage.addEventListener(
+    sourceImage.addEventListener(
       'load',
       () => {
-        window.MyApp.grayscaleSketch(document.getElementById('grayscaleCanvas'));
+        grayscaleSketch(document.getElementById('grayscaleCanvas'));
       }
     );
 
@@ -54,7 +52,7 @@
         reader.addEventListener(
           'load', 
           () => { 
-            window.MyApp.sharedImage.src = reader.result;
+            sourceImage.src = reader.result;
             const previewImage = document.getElementById('imagePreview');
             previewImage.src = reader.result;
           },
@@ -68,21 +66,20 @@
       }
     );
   </script>
-  <script src="grayscale.js"></script>
-  <script src="difference_of_gaussians.js"></script>
-  <script src="gaussianblur.js"></script>
-
+  <script src="http://localhost:8080/grayscale.js" type="module"></script>
+  <script src="http://localhost:8080/bilateralfilter.js" type="module"></script>
+  <script src="http://localhost:8080/gaussianblur.js"></script>
+  <script src="http://localhost:8080/difference_of_gaussians.js"></script>
+  
   <label for="imagePreviewDimensions">Dimensions: </label>
   <span id="imagePreviewDimensions"></span>
   
-  
   <h3>Grayscale</h3>
   <p>Grayscaling is done by calculating the luminosity of each pixel using</p>
-  <!-- program i made -->
   <canvas id="grayscaleCanvas" ></canvas>
-  <script>
-    window.MyApp.grayscaleCanvas = document.getElementById('grayscaleCanvas');
-  </script>
+
+  <h3>Bilateral Filter</h3>
+  <canvas id="bilateralfilterCanvas"></canvas>
 
   <h3>Applying Gaussian Blur</h3>
   <p>Video here.</p>
@@ -111,21 +108,20 @@
   <button id="applyBlur">Apply Blur</button>
 
   <script>
-    document.getElementById('applyBlur').addEventListener('click', () => {
-      document.querySelectorAll('.blur-container').forEach((nodeList) => {
+    const dogHelper = () => {
+        document.querySelectorAll('.blur-container').forEach((nodeList) => {
         const canvas = nodeList.querySelector('.blurCanvas');
         const sigma_input = parseFloat(nodeList.querySelector('.sigma-input')?.value);
         setSigmaAndRun(canvas, sigma_input);
       });
-
       dogDraw();
-    });
+    } 
+    document.getElementById('applyBlur').addEventListener('click', dogHelper);
   </script>
+
 
   <h3>Difference of Gaussians</h3>
   <canvas id="dogCanvas"></canvas>
-    
-
 
   </body>
 </html>
