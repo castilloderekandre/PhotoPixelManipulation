@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import AsciiGenerator from "../image-functions/asciiGenerator";
 import type { ImageGenerationRequest } from '../api/asciiApi';
 
-export const generateAscii = (req: ImageGenerationRequest, res: Response): void => {
+export const generateAscii = (req: ImageGenerationRequest, res: Response) => {
 	const { image } = req.body;
 
 	if (!image) {
