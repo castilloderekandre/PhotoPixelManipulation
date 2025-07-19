@@ -11,7 +11,7 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT || 8000;
 app.use(express_1.default.json());
-app.use('/api/imageGenerator', image_route_1.default);
+app.use('/api/imagegenerator', image_route_1.default);
 app.listen(port, () => {
-    console.log(`Server is Fire at http://localhost:${port}`);
+    console.log(`Server is fired at http://localhost:${port}`);
 });

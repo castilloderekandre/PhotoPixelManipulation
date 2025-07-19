@@ -20,7 +20,7 @@ export const generateAscii = (req: ImageGenerationRequest, res: Response) => {
 
 
 export const start = (req: Request, res: Response) => {
-  res.send('Welcome to Express & TypeScript Server');
+  res.send('Welcome to Express & TypeScript Server\n');
 };
 
 export const test = (req: Request, res: Response) => {

@@ -6,10 +6,10 @@ import imageGeneratorRouters from './routes/image.route';
 dotenv.config();
 
 const app: Application = express();
-const port = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8000;
 
 app.use(express.json());
-app.use('/api/imageGenerator', imageGeneratorRouters);
-app.listen(port, () => {
-  console.log(`Server is fired at http://localhost:${port}`);
+app.use('/api/imagegenerator', imageGeneratorRouters);
+app.listen(PORT, () => {
+  console.log(`Server is fired at http://localhost:${PORT}\n`);
 });
