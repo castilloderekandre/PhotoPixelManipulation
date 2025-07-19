@@ -1,14 +1,27 @@
 import math
 import random
+import numpy as np
+from perlin_numpy import generate_perlin_noise_2d;
 from dataclasses import dataclass
+
+# [TODO] USE PERLINE NOISE TO MAKE PIXEL INTENSITY WINDOW EXAMPLE MORE ACCURATE
 
 def spatialKernel(x, y, xo, yo, sigma):
   sigma2 = 2 * sigma * sigma
   return math.exp( -((x - xo)**2 + (y - yo)**2) / sigma2)
 
+def spatialKernelConstructor(size, sigma):
+  sigma2 = 2 * sigma * sigma
+  gaussiankernel = [get1DGaussian(i, 0, sigma) for i in range(-KERNEL_HS, KERNEL_HS, 1)]
+  
+
 def rangeKernel(i, io, sigma):
   sigma2 = 2 * sigma * sigma
   return math.exp( - ((i - io)**2) / sigma2)
+
+def get1DGaussian(q, p, sigma):
+  sigma2 = 2 * sigma * sigma
+  return math.exp( - ((q - p)**2) / sigma2)
 
 def ansi_rgb(gradient):
   return f"\x1b[38;2;{gradient.r};{gradient.g};{gradient.b}m"
@@ -19,12 +32,12 @@ def map_to_value(start, end, scalar):
 def normalize(start, end, value):
   return (value - end) / (start - end)
 
-def map_rgb_values(rgb_list, scalar):
+def map_rgb_values(rgb_list, normalized_value):
   for i in range(len(rgb_list)):
-    if scalar <= rgb_list[i].start and scalar >= rgb_list[i].end:
+    if normalized_value <= rgb_list[i].start and normalized_value >= rgb_list[i].end:
       current_element = rgb_list[i]
       next_element = rgb_list[i + 1]
-      normalized_scalar = normalize(current_element.start, current_element.end, scalar)
+      normalized_scalar = normalize(current_element.start, current_element.end, normalized_value)
       return RGB(
         map_to_value(current_element.rgb.r, next_element.rgb.r, normalized_scalar),
         map_to_value(current_element.rgb.g, next_element.rgb.g, normalized_scalar),
@@ -33,7 +46,7 @@ def map_rgb_values(rgb_list, scalar):
 
     i + 1
 
-def prettify_matrix_print(matrix):
+def colorize_output(matrix):
   most_characters = 0
   
   for column in matrix:
@@ -63,25 +76,26 @@ class RGB_HELPER:
   end: float
 
 RGB_STEPS = [
-  RGB_HELPER(RGB(0, 105, 191), 1, 0.5),
+  RGB_HELPER(RGB(231, 18, 36), 1, 0.5),
   RGB_HELPER(RGB(254, 212, 48), 0.5, 0),
-  RGB_HELPER(RGB(231, 18, 36), 0, 0)
+  RGB_HELPER(RGB(0, 105, 191), 0, 0),
 ]
-KERNEL_SIZE = 7
+KERNEL_SIZE = 13
 KERNEL_HS = math.floor(KERNEL_SIZE / 2) # Kernel half size
-SPATIAL_SIGMA = 2
-RANGE_SIGMA = 10
+SPATIAL_SIGMA = 3
+RANGE_SIGMA = 20
 pixel_window = [[math.floor(random.random() * 255) for i in range(KERNEL_SIZE)] for j in range(KERNEL_SIZE)]
 spatial_kernel = [[round(spatialKernel(i, j, KERNEL_HS, KERNEL_HS, SPATIAL_SIGMA), 4) for i in range(KERNEL_SIZE)] for j in range(KERNEL_SIZE)]
 range_kernel = [[round(rangeKernel(pixel_window[j][i], pixel_window[KERNEL_HS][KERNEL_HS], RANGE_SIGMA), 4) for i in range(KERNEL_SIZE)] for j in range(KERNEL_SIZE)]
 
 print("SPATIAL KERNEL")
-prettify_matrix_print(spatial_kernel)
+colorize_output(spatial_kernel)
 print("PIXEL WINDOW (INTENSITY)")
-prettify_matrix_print(pixel_window)
+colorize_output(pixel_window)
 print("RANGE KERNEL")
-prettify_matrix_print(range_kernel)
+colorize_output(range_kernel)
 # for scalar in range(0, 11):
 #   scalar *= 0.1
 #   print(f"DEBUG TEST: \x1b{ansi_rgb((map_rgb_values(RGB_STEPS, scalar)))}TEST TEXT\x1b[0m")
 
+# print(f"DEBUG TEST: {round(rangeKernel(27, 8, RANGE_SIGMA), 4)}")
