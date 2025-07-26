@@ -1,34 +1,23 @@
 import React, {useState} from "react";
 import type { ApiTestResponse } from "../api/types";
+import { apiGet } from "../api/client";
 
 const PORT = 8000;
 
 const ApiButton = () => {
-	const [response, setResponse] = useState<null|string>(null);
 	const [loading, setLoading] = useState(false);
+	const [response, setResponse] = useState<null|string>(null);
 	const [error, setError] = useState<null|string>(null);
 
 	const callApi = async () => {
+		setLoading(true);
 		setResponse('');
 		setError('');
-		setLoading(true);
 
-		fetch(`http://localhost:${PORT}/api/imagegenerator/`)
-			.then((res) => {
-				if(!res.ok) {
-					return Promise.reject(new Error(`HTTP ${res.status}`));
-				}
-				return res.json() as Promise<ApiTestResponse>;
-			})
-			.then((data) => {
-				setResponse(data.msg);
-			})
-			.catch((error) => {
-				setError(`Error connecting to API: ${error}`);
-			})
-			.finally(() => {
-				setLoading(false);
-			})
+		apiGet<ApiTestResponse>('api/imagegenerator')
+			.then((data) => setResponse(data.msg))
+			.catch((error) => setError(`Error connecting to API: ${error}`))
+			.finally(() => setLoading(false));
 	};
 
 	return (
