@@ -1,11 +1,11 @@
-@reference tailwindcss
+@reference "tailwindcss";
 
 .navbar {
 	@apply fixed top-5 left-1/2 -translate-x-1/2 bg-sky-900 h-10 rounded-lg;
 }
 
 .container {
-	@apply flex flex-center gap-2 items-center justify-center px-5 h-full;
+	@apply flex flex-row gap-2 items-center justify-center px-5 h-full;
 }
 
 .links {
