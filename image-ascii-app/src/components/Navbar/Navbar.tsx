@@ -14,7 +14,7 @@ const Navbar = ({links}: NavProps) => {
 	return (
 		<nav className={styles.navbar}>
 			<div className={styles.container}>
-				{ links.map((link) => (<Link className={styles.links} to={link.path} >{link.label}</Link>)) }
+				{ links.map((link) => (<Link className={styles.links} key={link.path} to={link.path} >{link.label}</Link>)) }
 			</div>
 		</nav>
 	)

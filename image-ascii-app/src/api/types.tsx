@@ -4,12 +4,12 @@ export interface ApiTestResponse {
 	msg: string;
 }
 
-export type IndexRoute = {
+export interface IndexRoute {
 	index: true;
 	element: ReactElement;
 }
 
-export type PathRoute = {
+export interface PathRoute {
 	path: string;
 	element: ReactElement;
 }
@@ -23,4 +23,9 @@ export type AppRoute = {
 	path: string;
 	element: ReactElement;
 	children?: (IndexRoute | PathRoute | NavRoute)[];
+}
+
+export interface ProjectCardMeta {
+	coverimage: string;
+	description: string;
 }

@@ -1,0 +1,5 @@
+@reference "tailwindcss";
+
+.root {
+	@apply grid grid-cols-3 w-full bg-blue-200 justify-around;
+}

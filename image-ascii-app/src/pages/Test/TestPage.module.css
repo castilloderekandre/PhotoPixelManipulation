@@ -1,0 +1,9 @@
+@reference "tailwindcss";
+
+.root {
+	@apply flex justify-around bg-pink-200 h-150;
+}
+
+.child1 {
+	@apply self-center bg-blue-200;
+}

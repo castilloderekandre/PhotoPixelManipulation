@@ -1,0 +1,5 @@
+@reference "tailwindcss";
+
+.name-container {
+	@apply flex flex-col text-center w-full h-[700px] justify-center self-center bg-gray-200;
+}
