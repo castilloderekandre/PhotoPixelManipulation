@@ -1,15 +1,15 @@
 @reference "tailwindcss";
 
 .navbar {
-	@apply fixed top-5 left-1/2 -translate-x-1/2 bg-sky-900 h-10 rounded-lg;
+	@apply fixed top-5 left-1/2 -translate-x-1/2 bg-sky-900 shadow-lg shadow-sky-900/50 h-10 rounded-lg;
 }
 
 .container {
-	@apply flex flex-row gap-2 items-center justify-center px-5 h-full;
+	@apply flex flex-row gap-2 items-center px-10 h-full; 
 }
 
 .links {
-	@apply text-white;
+	@apply text-white no-underline;
 }
 
 .links:hover {

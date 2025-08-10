@@ -1,0 +1,9 @@
+@reference "tailwindcss";
+
+.container {
+	@apply flex flex-col w-full;
+}
+
+.biography {
+	@apply flex-col self-center w-[900px];
+}
