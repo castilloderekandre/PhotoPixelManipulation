@@ -27,5 +27,7 @@ export type AppRoute = {
 
 export interface ProjectCardMeta {
 	coverimage: string;
+	projectTitle: string;
 	description: string;
+	technologies: string[];
 }

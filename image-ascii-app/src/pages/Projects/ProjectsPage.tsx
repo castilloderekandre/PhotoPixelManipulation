@@ -1,16 +1,11 @@
 import styles from './ProjectsPage.module.css';
-import ProjectCard from "../../components/ProjectCard/ProjectCard";
 import { projectMetaObjects } from '../../assets/projects/projectMetadataObjects';
-import type { ProjectCardMeta } from '../../api/types';
+import ProjectCardGrid from '../../components/ProjectCardGrid/ProjectCardGrid';
 
 export default function ProjectsPage() {
 	return (
 		<div className={styles.root}>
-			{
-				projectMetaObjects.map((projectMetaObject: ProjectCardMeta) => {
-					return (<ProjectCard coverimage={projectMetaObject.coverimage} description={projectMetaObject.description} />);
-				})
-			}
+				<ProjectCardGrid projectMetaObjects={projectMetaObjects} cols={3} />
 		</div>
 	);
 }

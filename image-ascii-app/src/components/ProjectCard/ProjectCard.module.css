@@ -1,11 +1,15 @@
 @reference "tailwindcss";
 
 .root {
-	@apply flex flex-col justify-start bg-pink-200 w-[400px] h-[350px] rounded-lg p-10;
+	@apply flex flex-col justify-start bg-pink-200 h-[350px] rounded-lg p-10;
 }
 
 .image {
 	@apply object-scale-down h-46 self-center;
+}
+
+.title {
+	@apply text-center;
 }
 
 .text {

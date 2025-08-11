@@ -5,11 +5,57 @@ const images: Record<string, { default: string}> = import.meta.glob('../images/*
 const projectMetadata = [
 	{
 		imageKey: `${path}ASCII.png`,
-		description: "Image to ASCII"
+		projectTitle: 'ASCII Art Generator',
+		description: "Image to ASCII",
+		technologies: [ 'TypeScript', 'Image Processing' ],
 	},
 	{
 		imageKey: `${path}MotionController.jpg`,
-		description: "Motion controller utilitzing PIC18F4550 & MPU-6050"
+		projectTitle: 'Motion Controller',
+		description: 'Motion controller utilitzing PIC18F4550 & MPU-6050',
+		technologies: [ 'Electronics', 'PIC18F4550', 'MPU-6050' ],
+	},
+	{
+		imageKey: `${path}test1.png`,
+		projectTitle: 'Arch Linux (Hyprland) & Windows Hybrid Laptop Setup (NVIDIA)',
+		description: '',
+		technologies: [ 'Linux', 'Windows', 'PRIME NVIDIA', 'Hyprland' ]
+	},
+	{
+		imageKey: `${path}test2.jpg`,
+		projectTitle: 'Ubuntu Server',
+		description: '',
+		technologies: [ 'Home Lab', 'Ubuntu Server', 'SSH', 'Docker' ],
+	},
+	{
+		imageKey: `${path}test1.png`,
+		projectTitle: 'Spotify Clone',
+		description: '',
+		technologies: [ '.NET Core', 'C#', 'MySQL', 'XAMPP' ],
+	},
+	{
+		imageKey: `${path}test1.png`,
+		projectTitle: 'Egg Incubator',
+		description: '',
+		technologies: [ 'Electronics', 'Arduino', 'Optocoupler' ],
+	},
+	{
+		imageKey: `${path}test1.png`,
+		projectTitle: 'Power Supply',
+		description: '',
+		technologies: [ 'Electronics' ],
+	},
+	{
+		imageKey: `${path}test1.png`,
+		projectTitle: 'Fan Control on Linux',
+		description: '',
+		technologies: [ 'Linux', 'Windows', 'ACPI', 'Embedded Controller' ],
+	},
+	{
+		imageKey: `${path}test1.png`,
+		projectTitle: 'School Environment Lab (Packet Tracer)',
+		description: '',
+		technologies: [ 'Networking', 'VLAN', 'Switch', 'Routing', 'Cisco Packet Tracer' ],
 	},
 ]
 
@@ -17,6 +63,8 @@ export const projectMetaObjects: ProjectCardMeta[] = projectMetadata.map((projec
 	{
 		return {
 			coverimage: images[projectMetaObject.imageKey].default,
-			description: projectMetaObject.description
+			projectTitle: projectMetaObject.projectTitle,
+			description: projectMetaObject.description,
+			technologies: projectMetaObject.technologies,
 		}
 	});
