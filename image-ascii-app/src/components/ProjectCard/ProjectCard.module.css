@@ -1,7 +1,11 @@
 @reference "tailwindcss";
 
 .root {
-	@apply flex flex-col justify-start bg-pink-200 h-[350px] rounded-lg p-10;
+	@apply flex flex-col justify-start bg-[#2F4858] h-[350px] rounded-lg p-10 text-white transition-colors duration-700;
+}
+
+.root:hover {
+	@apply bg-[#1B998B] transition-colors duration-700;
 }
 
 .image {

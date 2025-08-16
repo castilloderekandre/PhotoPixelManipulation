@@ -28,17 +28,18 @@ const ProjectCardGrid = ({projectMetaObjects, cols}: Props) => {
 	}
 
 	return (
-		<div className={clsx('grid gap-10 w-full bg-blue-100', gridCols[cols])}>
+		<div className={clsx(styles.root, gridCols[cols])}>
 			{projectMetaObjects.map((projectMetaObject: ProjectCardMeta, index: number) => {
 				const itemsLeft = 3 - ((index % cols) + 1);
 				const lastItem = (index == projectMetaObjects.length - 1);
 				return (<ProjectCard
-							 className={lastItem && gridSpan[itemsLeft + 1]}
-							 coverimage={projectMetaObject.coverimage}
-							 projectTitle={projectMetaObject.projectTitle}
-							 description={projectMetaObject.description}
-							 technologies={projectMetaObject.technologies} 
-							/>)
+					className={lastItem && gridSpan[itemsLeft + 1]}
+					coverimage={projectMetaObject.coverimage}
+					title={projectMetaObject.title}
+					description={projectMetaObject.description}
+					technologies={projectMetaObject.technologies} 
+					path={projectMetaObject.path}
+				/>);
 			})}
 		</div>
 	);
