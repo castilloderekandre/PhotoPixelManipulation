@@ -1,7 +1,7 @@
 @reference "tailwindcss";
 
 .navbar {
-	@apply fixed top-5 left-1/2 -translate-x-1/2 bg-sky-900 shadow-lg shadow-sky-900/50 h-10 rounded-lg;
+	@apply fixed top-5 left-1/2 -translate-x-1/2 bg-[#1B998B] shadow-lg shadow-[#1B998B]/50 h-10 rounded-lg;
 }
 
 .container {
@@ -9,9 +9,9 @@
 }
 
 .links {
-	@apply text-white no-underline;
+	@apply text-white no-underline transition-colors duration-500;
 }
 
 .links:hover {
-	@apply text-black transition-colors duration-200;
+	@apply text-black transition-colors duration-500;
 }
