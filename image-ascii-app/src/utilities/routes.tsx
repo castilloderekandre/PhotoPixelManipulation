@@ -1,12 +1,8 @@
-import HomePage from "./pages/Home/HomePage";
-import ProjectsPage from "./pages/Projects/ProjectsPage";
-import ContactPage from "./pages/Contact/ContactPage";
-import NotFoundPage from "./pages/Not Found/NotFoundPage";
-import RootLayout from "./components/RootLayout/RootLayout";
-import TestPage from "./pages/Test/TestPage";
+import RootLayout from "../components/RootLayout/RootLayout";
+import { HomePage, ProjectsPage, ContactPage, NotFoundPage, TestPage } from '../pages'
 // import type { AppRoute, IndexRoute, PathRoute, NavRoute } from "./api/types";
-import AboutMePage from "./pages/About/AboutMePage";
-import { projectMetaObjects } from "./assets/projects/projectMetadataObjects";
+import AboutMePage from "../pages/About/AboutMePage";
+import { projectMetaObjects } from "../assets/projects/projectMetadata";
 
 
 export const appRoutes = [

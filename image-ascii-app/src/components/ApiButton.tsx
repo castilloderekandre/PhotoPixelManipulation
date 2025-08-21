@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import type { ApiTestResponse } from "../api/types";
+import type { ApiTestResponse } from "../utilities/types";
 import { apiGet } from "../api/client";
 
 const PORT = 8000;

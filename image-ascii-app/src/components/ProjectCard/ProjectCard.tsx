@@ -1,11 +1,11 @@
 import clsx from 'clsx';
 import styles from './ProjectCard.module.css';
-import type { ProjectCardMeta } from '../../api/types';
+import type { ProjectData as ProjectData } from '../../utilities/types';
 import { useNavigate } from 'react-router-dom';
 
-interface Props extends ProjectCardMeta, Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {}
+interface Props extends ProjectData, Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {}
 
-const ProjectCard = ({coverimage, title, description, technologies, className, path}: Props) => {
+const Card = ({coverimage, title, description, technologies, className, path}: Props) => {
 	const navigate = useNavigate();
 
 	return (
@@ -20,4 +20,4 @@ const ProjectCard = ({coverimage, title, description, technologies, className, p
 	); 
 };
 
-export default ProjectCard;
+export default Card;

@@ -25,11 +25,16 @@ export type AppRoute = {
 	children?: (IndexRoute | PathRoute | NavRoute)[];
 }
 
-export interface ProjectCardMeta {
-	coverimage: string;
-	title: string;
+export interface ProjectData {
+	coverimage: string; // for import.meta.glob
+	title: string
 	description: string;
-	technologies: string[];
-	path: string;
-	element: ReactElement;
+	technologies: string[]; // tag component
+	path: string; // page route where it will be
+	element: ReactElement,
+}
+
+export interface Technology {
+	name: string;
+	icon: SVGElement;
 }

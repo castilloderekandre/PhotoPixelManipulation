@@ -1,22 +1,19 @@
 // [TODO] Use IDs instead of named paths for scalability
 
 import type { ReactElement } from "react";
-import type { ProjectCardMeta } from "../../api/types";
+import type { ProjectData, Technology } from "../../utilities/types";
 const path = '../images/';
 const images: Record<string, { default: string}> = import.meta.glob('../images/*', { eager: true, query: '?url' });
-import ASCIIPage from "../../pages/Projects/ASCIIPage";
-import MotionControllerPage from "../../pages/Projects/MotionControllerPage";
+import { ASCIIPage, MotionControllerPage } from '../../pages/Projects/Blogs';
 
-interface ProjectData {
-	imageKey: string; // for import.meta.glob
-	title: string
-	description: string;
-	technologies: string[]; // tag component
-	path: string; // page route where it will be
-	element: ReactElement,
-}
+// const technologies: Technology[] [
+	// {
+	// 	name: 'Typescript',
+	// 	icon: 
+	// }
+// ]
 
-const projectData: ProjectData[] = [
+const projectData = [
 	{
 		imageKey: `${path}ASCII.png`,
 		title: 'ASCII Art Generator',
@@ -84,7 +81,7 @@ const projectData: ProjectData[] = [
 	// },
 ]
 
-export const projectMetaObjects: ProjectCardMeta[] = projectData.map((projectMetaObject) => 
+export const projectMetaObjects: ProjectData[] = projectData.map((projectMetaObject) => 
 	{
 		return {
 			coverimage: images[projectMetaObject.imageKey].default,

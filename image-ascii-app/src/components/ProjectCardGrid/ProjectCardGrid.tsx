@@ -1,14 +1,14 @@
 import clsx from 'clsx';
 import styles from './ProjectCardGrid.module.css';
-import ProjectCard from "../ProjectCard/ProjectCard";
-import type { ProjectCardMeta } from "../../api/types";
+import Card from "../ProjectCard/ProjectCard";
+import type { ProjectData } from "../../utilities/types";
 
 interface Props {
-	projectMetaObjects: ProjectCardMeta[];
+	projectMetaObjects: ProjectData[];
 	cols: 1 | 2 | 3 | 4 | 5 | 6;
 }
 
-const ProjectCardGrid = ({projectMetaObjects, cols}: Props) => {
+const CardGrid = ({projectMetaObjects, cols}: Props) => {
 	const gridCols = {
 		1: 'grid-cols-1',
 		2: 'grid-cols-2',
@@ -29,10 +29,10 @@ const ProjectCardGrid = ({projectMetaObjects, cols}: Props) => {
 
 	return (
 		<div className={clsx(styles.root, gridCols[cols])}>
-			{projectMetaObjects.map((projectMetaObject: ProjectCardMeta, index: number) => {
+			{projectMetaObjects.map((projectMetaObject: ProjectData, index: number) => {
 				const itemsLeft = 3 - ((index % cols) + 1);
 				const lastItem = (index == projectMetaObjects.length - 1);
-				return (<ProjectCard
+				return (<Card
 					className={lastItem && gridSpan[itemsLeft + 1]}
 					coverimage={projectMetaObject.coverimage}
 					title={projectMetaObject.title}
@@ -45,4 +45,4 @@ const ProjectCardGrid = ({projectMetaObjects, cols}: Props) => {
 	);
 }
 
-export default ProjectCardGrid;
+export default CardGrid;
