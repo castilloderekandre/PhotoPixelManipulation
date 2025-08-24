@@ -10,7 +10,8 @@ const app: Application = express();
 const PORT = process.env.PORT || 8000;
 
 app.use(cors());
-app.use('/api/imagegenerator', imageGeneratorRouters);
+app.use(express.json({ limit: '50mb' }));
+app.use('/api/ascii', imageGeneratorRouters);
 app.listen(PORT, () => {
   console.log(`Server is fired at http://localhost:${PORT}\n`);
 });

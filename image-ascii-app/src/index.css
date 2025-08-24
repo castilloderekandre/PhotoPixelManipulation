@@ -12,12 +12,17 @@
 	-moz-osx-font-smoothing: grayscale;
 }
 
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
 body {
 	margin: 0;
 	min-width: 320px;
 	min-height: 100vh;
 	padding-top: 80px;
-	background-color: #1F363D;
+	background-color: #0A0F0D;
 	color: #CCCCCC;
 }
 

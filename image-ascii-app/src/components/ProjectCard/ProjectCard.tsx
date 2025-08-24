@@ -11,10 +11,12 @@ const Card = ({coverimage, title, description, technologies, className, path}: P
 	return (
 		<div className={clsx(styles.root, className)} onClick={() => navigate(path)}>
 			<img className={styles.image} src={coverimage} />
-			<h1>{title}</h1>
-			<p className={styles.text}>
-				{description}
-			</p>
+			<div className={styles.info}>
+				<h1>{title}</h1>
+				<p className={styles.text}>
+					{description}
+				</p>
+			</div>
 			<div>{technologies}</div>
 		</div>
 	); 

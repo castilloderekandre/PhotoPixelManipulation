@@ -1,7 +1,7 @@
 @reference "tailwindcss";
 
 .navbar {
-	@apply fixed top-5 left-1/2 -translate-x-1/2 bg-[#1B998B] shadow-lg shadow-[#1B998B]/50 h-10 rounded-lg;
+	@apply fixed top-5 left-1/2 -translate-x-1/2 bg-[#43AA8B] shadow-lg shadow-[#43AA8B]/50 h-10 rounded-lg;
 }
 
 .container {
