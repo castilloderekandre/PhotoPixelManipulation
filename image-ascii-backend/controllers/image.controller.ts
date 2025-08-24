@@ -11,10 +11,10 @@ export const generateAscii = (req: ImageGenerationRequest, res: Response) => {
 	}
 
 	const generator = new AsciiGenerator();
-	const result = generator.make(req.body.image);
+	const result = generator.make(image);
 
 	res.status(200).json({ data: {
-		imageB64: result
+		asciiText: result
 	}});
 };
 

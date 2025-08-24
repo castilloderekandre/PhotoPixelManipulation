@@ -14,7 +14,7 @@ const ApiButton = () => {
 		setResponse('');
 		setError('');
 
-		apiGet<ApiTestResponse>('api/imagegenerator')
+		apiGet<ApiTestResponse>('api/ascii')
 			.then((data) => setResponse(data.msg))
 			.catch((error) => setError(`Error connecting to API: ${error}`))
 			.finally(() => setLoading(false));
@@ -25,6 +25,7 @@ const ApiButton = () => {
 			<button onClick={callApi} disabled={loading}>
 				{loading ? 'Loading...' : 'Call API'}
 			</button>
+			<p>{response}</p>
 		</div>
 	);
 }
