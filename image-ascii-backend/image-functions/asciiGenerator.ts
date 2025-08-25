@@ -1,3 +1,4 @@
+import CanvasImage from "./canvasImage";
 import bilateralfilter from "./bilateralFilter";
 //import * as ffmpeg from "@ffmpeg/core"; NO TYPED DEFINITIONS - FIX!!
 
@@ -13,18 +14,25 @@ class AsciiGenerator {
 
 	imageResult: string
 
-    constructor() {
-        this.imageResult = "";
-        //ffmpeg();
-    }
+	constructor() {
+		this.imageResult = "";
+		//ffmpeg();
+	}
 
-    /** The core entrypoint for creating an image.
-     * @param {string} imageData - The raw imageData as base64
-    */
-    make(imageData: string): string {
-        let result = "A cool looking image";
-        return result;
-    }
+	/** The core entrypoint for creating an image.
+			* @param {string} base64Image - The raw imageData as base64
+		*/
+	async make(base64Image: string): Promise<string> {
+		try {
+			const image = await CanvasImage.create(base64Image);	
+			
+			const result = image.canvas.toDataURL();
+			return result;
+		} catch (error) {
+			throw new Error(`Failed to convert image to ASCII text: ${error}`);
+		}
+	}
+
 }
 
 export default AsciiGenerator;

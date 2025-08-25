@@ -59,7 +59,7 @@ export interface Technology {
 
 /* File uploader properties for handling various events and attributes */
 export interface FileUploaderProps {
-	onSingleFileSelect: (file: File | null) => void;
+	onSingleFileSelect: (file: File) => void;
 	accept: string;
 	multiple?: boolean;
 }

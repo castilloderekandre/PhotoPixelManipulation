@@ -18,15 +18,20 @@ export default function ASCIIPage() {
 	const [error, setError] = useState<null|string>(null);
 	const [loading, setLoading] = useState<boolean>(false);
 
-	const fileHandler = async (file: File | null) => {
+	const fileHandler = async (file: File) => {
 		setLoading(true);
 		setError(null);
 		setResponse(null);
 
-		const image = await fileToBase64(file!);
-
-		const response = await apiPost<ApiAsciiResponse>('api/ascii/generate', { image } as ApiAsciiRequest);
-		setResponse(response.data.asciiText);
+		try {
+			const image = await fileToBase64(file);
+			const response = await apiPost<ApiAsciiResponse>('api/ascii/generate', { image } as ApiAsciiRequest)
+			setResponse(response.data.asciiText);
+		} catch (error) {
+			setError(error instanceof Error ? error.message : String(error));	
+		} finally {
+			setLoading(false);
+		}
 	}
 
 	return (
@@ -36,7 +41,7 @@ export default function ASCIIPage() {
 				Utilizing image processing techniques to achieve a refined transformation from an image to ASCII text.
 			</p>
 			<FileUploader accept="image/*" onSingleFileSelect={fileHandler} />
-			<p>{response}</p>
+			<img src={response as string} />
 		</div>
 	);
 }
