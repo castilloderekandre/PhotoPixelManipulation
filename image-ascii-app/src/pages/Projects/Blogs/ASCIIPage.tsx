@@ -41,7 +41,7 @@ export default function ASCIIPage() {
 				Utilizing image processing techniques to achieve a refined transformation from an image to ASCII text.
 			</p>
 			<FileUploader accept="image/*" onSingleFileSelect={fileHandler} />
-			<p>{response}</p>
+			<img src={response as string} />
 		</div>
 	);
 }

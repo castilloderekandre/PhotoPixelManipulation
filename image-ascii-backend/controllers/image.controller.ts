@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import AsciiGenerator from "../image-functions/asciiGenerator";
 import type { ImageGenerationRequest } from '../api/asciiApi';
 
-export const generateAscii = (req: ImageGenerationRequest, res: Response) => {
+export const generateAscii = async (req: ImageGenerationRequest, res: Response) => {
 	const { image } = req.body;
 
 	if (!image) {
@@ -11,7 +11,7 @@ export const generateAscii = (req: ImageGenerationRequest, res: Response) => {
 	}
 
 	const generator = new AsciiGenerator();
-	const result = generator.make(image);
+	const result = await generator.make(image); // ADD ERROR HANDLING
 
 	res.status(200).json({ data: {
 		asciiText: result
