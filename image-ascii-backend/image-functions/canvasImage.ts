@@ -36,7 +36,6 @@ class CanvasImage {
 		this._imageData = newValue;
 	}
 
-
 	private constructor(base64Image: string, [canvas, context, imageData]: CanvasData) {
 		this._base64Image = base64Image;
 		this._canvas = canvas;
@@ -45,7 +44,7 @@ class CanvasImage {
 	}
 
 	static async create(base64Image: string): Promise<CanvasImage> {
-		const image = await this.processImage(base64Image)	
+		const image: CanvasData = await this.processImage(base64Image)	
 
 		return new CanvasImage(base64Image, image);
 	}
@@ -62,7 +61,7 @@ class CanvasImage {
 					context.getImageData(0, 0, canvas.width, canvas.height)
 				]);
 			}
-			image.onerror = reject;
+			image.onerror = () => reject(new Error('Image could not be proccesed.'));
 			image.src = base64Image;
 		});
 	}

@@ -1,4 +1,5 @@
 image-ascii-backend/node_modules
 image-ascii-app/**/node_modules
+image-ascii-motion-canvas/node_modules
 .env
 commit.md
