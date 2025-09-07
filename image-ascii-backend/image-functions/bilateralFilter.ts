@@ -1,37 +1,62 @@
-/**
- * Returns the cartesian distance between two points on a pixel grid.
- * @param x - The x coordinate
- * @param y - The y coordinate
- * @param xo - The anchor/center x coordinate
- * @param yo - The anchor/center y coordinate
- * @returns cartesian distance
- */
-const spatialKernel = (
-    x: number,
-    y: number,
-    xo: number,
-    yo: number,
-    sigma: number
-): number => {
-  const sigma2: number = 2 * sigma * sigma;
-  return Math.exp( -((x - xo)**2 + (y-yo)**2) / sigma2 );
+import { Image, ImageData, CanvasRenderingContext2D, Canvas, createCanvas } from "canvas";
+import CanvasImage from "./canvasImage";
+
+class Kernel {
+	private _size!: number;
+	private _halfSize!: number;
+
+	get size(): number {
+		return this._size;
+	}
+
+	set size(newValue: number) {
+		this._size = newValue;
+		this._halfSize = Math.floor(this.size / 2);
+	}
+	
+	get halfSize() {
+		return this._halfSize;
+	}
+
+	constructor(size: number) {
+		this.size = size;
+	}
 }
 
 /**
- * 
- * @param i - p in pixel intensity
- * @param io - The anchor/center pixel intensity
- * @param sigma - Coeficient controlling width of gaussian curve
- * @returns 
- */
+* Returns the cartesian distance between two points on a pixel grid.
+* @param x - The x coordinate
+* @param y - The y coordinate
+* @param xo - The anchor/center x coordinate
+* @param yo - The anchor/center y coordinate
+* @returns cartesian distance
+*/
+const spatialKernel = (
+	x: number,
+	y: number,
+	xo: number,
+	yo: number,
+	sigma: number
+): number => {
+	const sigma2: number = 2 * sigma * sigma;
+	return Math.exp( -((x - xo)**2 + (y-yo)**2) / sigma2 );
+}
+
+/**
+* 
+* @param i - p in pixel intensity
+* @param io - The anchor/center pixel intensity
+* @param sigma - Coeficient controlling width of gaussian curve
+* @returns 
+*/
 const rangeKernel = (
-  i: number, 
-  io: number, 
-sigma: number,
+	i: number, 
+	io: number, 
+	sigma: number,
 ): number => { // intensity input
-  // just normal gaussian function
-  const sigma2: number = 2 * sigma * sigma;
-  return Math.exp( -((i - io)**2) / sigma2 );
+	// just normal gaussian function
+	const sigma2: number = 2 * sigma * sigma;
+	return Math.exp( -((i - io)**2) / sigma2 );
 }
 
 // const get1DGaussian = (q, p, sigma) => {
@@ -40,102 +65,84 @@ sigma: number,
 // }
 
 /**
- * Through row-major flattening, it returns the index for a 1D array.
- * @param width - Width of the image in pixels
- * @param x - Desired X
- * @param y - Desired Y
- * @returns Index of Red channel
- */
-const getPixelIndex = (
-  width: number,
-  x: number,
-  y: number
-): number => {
-  const PIXEL_DATA_WIDTH: number = 4; //Readability
-  const OFFSET_ROW: number    = PIXEL_DATA_WIDTH * width;
-  const OFFSET_COLUMN: number = PIXEL_DATA_WIDTH; //Readability
+* Through row-major flattening, it returns the index for a 1D array.
+* @param width - Width of the image in pixels
+* @param x - Desired X
+* @param y - Desired Y
+* @returns Index of Red channel
+*/
+function getPixelIndex (width: number, x: number, y: number): number {
+	const PIXEL_DATA_WIDTH: number = 4; //Readability
+	const OFFSET_ROW: number    = PIXEL_DATA_WIDTH * width;
+	const OFFSET_COLUMN: number = PIXEL_DATA_WIDTH; //Readability
 
-  return OFFSET_COLUMN * x + OFFSET_ROW * y;
+	return OFFSET_COLUMN * x + OFFSET_ROW * y;
 }
 
 /**
- * Applies a bilateral filter over an image
- * @param grayscale_canvas 
- * @param new_canvas 
- * @returns filtered imagea
- */
-const bilateralfilter = (
-  grayscale_canvas: HTMLCanvasElement,
-  new_canvas: HTMLCanvasElement,
-  KERNEL_SIZE: number
+* Applies a bilateral filter over an image
+* @param grayscale_canvas 
+* @param new_canvas 
+* @returns filtered image
+*/
+const bilateralFilter = (
+	canvasImage: CanvasImage,
+	KERNEL_SIZE: number,
+	SPATIAL_SIGMA: number,
+	RANGE_SIGMA: number
 ): void => {
 
-  const ctx: CanvasRenderingContext2D = new_canvas.getContext('2d')!;
-
-  const width: number = new_canvas.width = grayscale_canvas.width;
-  const height: number = new_canvas.height = grayscale_canvas.height;
-  ctx.fillStyle = 'white';
-  ctx.fillRect(0, 0, width, height);
-
-  const grayscaleImageData: ImageData = grayscale_canvas.getContext('2d')!.getImageData(0, 0, grayscale_canvas.width, grayscale_canvas.height);
-  const bilateralfilter: ImageData = applyKernels(grayscaleImageData, KERNEL_SIZE);
-
-  ctx.putImageData(bilateralfilter, 0, 0);
+	const kernel = new Kernel(KERNEL_SIZE);
+	applyKernels(canvasImage.imageData, kernel, SPATIAL_SIGMA, RANGE_SIGMA);
+	canvasImage.context.putImageData(canvasImage.imageData, 0, 0);
+	console.log('FILTER: Bilateral filter applied');
 }
 
-const applyKernels = (grayscaleImageData: ImageData, KERNEL_SIZE: number): ImageData => {
+const applyKernels = (imageData: ImageData, kernel: Kernel, SPATIAL_SIGMA: number, RANGE_SIGMA: number): void => {
 
-  let bilateralfilter: ImageData = new ImageData(grayscaleImageData.width, grayscaleImageData.height);
 
-  let spatial_kernel: number[][] = Array.from(
-    { length: KERNEL_SIZE },
-    (_, i) => Array.from(
-      { length: KERNEL_SIZE },
-      (_, j) => spatialKernel(i - KERNEL_HALF_SIZE, j - KERNEL_HALF_SIZE, 0, 0, SPATIAL_SIGMA)
-    ) 
-  );
+	let spatial_kernel: number[][] = Array.from( // spatial kernel will always be consistent so we precompute it
+		{ length: kernel.size},
+		(_, i) => Array.from(
+			{ length: kernel.size },
+			(_, j) => spatialKernel(i - kernel.halfSize, j - kernel.halfSize, 0, 0, SPATIAL_SIGMA)
+		) 
+	);
 
-  
-  for (let i = 0; i < grayscaleImageData.height; i++) {
-    for (let j = 0; j < grayscaleImageData.width; j++) {
-      
-      let window_sum: number = 0;
-      let kernel_sum: number = 0;
-      const anchor_intensity: number = grayscaleImageData.data[getPixelIndex(grayscaleImageData.width, j, i)];
-      
-      
-      for (let window_y: number = 0; window_y < KERNEL_SIZE /*window size*/; window_y++) {
-        for (let window_x: number = 0; window_x < KERNEL_SIZE /*window size*/; window_x++) {
-          const x: number = bounceCoordinate(j + window_x, grayscaleImageData.width - 1);
-          const y: number = bounceCoordinate(i + window_y, grayscaleImageData.height - 1);
-          const window_intensity: number = grayscaleImageData.data[getPixelIndex(grayscaleImageData.width, x, y)];
-          const w_p: number = spatial_kernel[window_y][window_x] * rangeKernel(window_intensity, anchor_intensity, RANGE_SIGMA);
-          window_sum += w_p * anchor_intensity;
-          kernel_sum += w_p;
-          // if (rangeKernel(window_intensity, anchor_intensity, RANGE_SIGMA) > 0) {
-          //   console.log(0);
-          //   // console.log(rangeKernel(window_intensity, anchor_intensity, RANGE_SIGMA));
-          // }
-        }
-      }
 
-      window_sum /= kernel_sum;
-      window_sum = Math.floor(window_sum);
+	for (let i = 0; i < imageData.height; i++) {
+		for (let j = 0; j < imageData.width; j++) {
 
-      const pixel_index: number = getPixelIndex(bilateralfilter.width, j, i);
-      bilateralfilter.data[pixel_index] = bilateralfilter.data[pixel_index + 1] = bilateralfilter.data[pixel_index + 2] = window_sum;
-      bilateralfilter.data[pixel_index + 3] = 255;
-    }
-  }
+			let window_sum: number = 0;
+			let kernel_sum: number = 0;
+			const center_pixel_intensity: number = imageData.data[getPixelIndex(imageData.width, j, i)];
 
-  return bilateralfilter;
+
+			for (let window_y: number = 0; window_y < kernel.size /*window size*/; window_y++) {
+				for (let window_x: number = 0; window_x < kernel.size /*window size*/; window_x++) {
+					const x: number = bounceCoordinate(j + window_x - kernel.halfSize, imageData.width - 1);
+					const y: number = bounceCoordinate(i + window_y - kernel.halfSize, imageData.height - 1);
+					const neighbor_intensity: number = imageData.data[getPixelIndex(imageData.width, x, y)];
+					const w_p: number = spatial_kernel[window_y][window_x] * rangeKernel(neighbor_intensity, center_pixel_intensity, RANGE_SIGMA);
+					window_sum += w_p * neighbor_intensity;
+					kernel_sum += w_p;
+				}
+			}
+
+			window_sum /= kernel_sum;
+			window_sum = Math.floor(window_sum);
+
+			const pixel_index: number = getPixelIndex(imageData.width, j, i);
+			imageData.data[pixel_index] = imageData.data[pixel_index + 1] = imageData.data[pixel_index + 2] = window_sum;
+			imageData.data[pixel_index + 3] = 255;
+		}
+	}
 }
 
-const bounceCoordinate = (coord: number, max: number): number => Math.abs(coord) & max; //Bounces/reflects the coordinate if necesarry to get the mirror padding.
+const bounceCoordinate = (coord: number, max: number): number => {
+	if (coord < 0) return Math.abs(coord);
+	if (coord > max) return max - (coord - max);
+	return coord
+} //Bounces/reflects the coordinate if necesarry to get the mirror padding.
 
-const KERNEL_SIZE: number = 7;
-const KERNEL_HALF_SIZE: number = Math.floor(KERNEL_SIZE / 2);
-const SPATIAL_SIGMA: number = 4;
-const RANGE_SIGMA: number = 4;
-
-export default bilateralfilter;
+export default bilateralFilter;
